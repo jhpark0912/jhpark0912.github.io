@@ -1,0 +1,114 @@
+.intro {
+  margin-bottom: var(--space-5);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-7) 0;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--ink-subtle);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card {
+  position: relative;
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* A slim lemon spine marks each note as a card without adding a heavy border. */
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-accent);
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.name {
+  font-size: var(--text-base);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.time {
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+}
+
+.message {
+  font-size: var(--text-sm);
+  line-height: 1.85;
+  color: var(--ink-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.delete {
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.pageArrow {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  font-size: var(--text-lg);
+  color: var(--ink-muted);
+}
+
+.pageArrow:disabled {
+  opacity: 0.35;
+}
+
+.pageInfo {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.writeWrap {
+  margin-top: var(--space-6);
+}

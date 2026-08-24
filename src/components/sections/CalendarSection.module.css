@@ -1,0 +1,156 @@
+.headline {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.big {
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.sub {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+.calendarWrap {
+  display: block;
+}
+
+.calendar {
+  padding: var(--space-5) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.weekHeader,
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.weekHeader {
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.weekday {
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ink-subtle);
+}
+
+.grid {
+  row-gap: 4px;
+}
+
+.day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.weekday[data-sunday='true'],
+.day[data-sunday='true'] {
+  color: #c9603f;
+}
+
+.weekday[data-saturday='true'],
+.day[data-saturday='true'] {
+  color: var(--sky-700);
+}
+
+/* The ceremony day sits inside a lemon disc — the one saturated spot here. */
+.day[data-wedding='true'] {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  animation: pulse 2.6s var(--ease-in-out) infinite;
+}
+
+.dayNumber {
+  position: relative;
+}
+
+.countdown {
+  margin-top: var(--space-6);
+  text-align: center;
+}
+
+.units {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-3) 0;
+  border-radius: var(--radius-md);
+  background: var(--lemon-100);
+}
+
+.value {
+  font-family: var(--font-serif);
+  font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.unitLabel {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  color: var(--lemon-700);
+}
+
+.dday {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.dday strong {
+  color: var(--color-accent-strong);
+  font-weight: 600;
+}
+
+.past {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(236, 212, 105, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(236, 212, 105, 0);
+  }
+}

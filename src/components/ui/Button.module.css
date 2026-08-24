@@ -1,0 +1,73 @@
+.base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+}
+
+.base:active {
+  transform: scale(0.97);
+}
+
+.base:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+.md {
+  min-height: 48px;
+  padding: 0 22px;
+  font-size: var(--text-base);
+}
+
+.sm {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: var(--text-sm);
+}
+
+.block {
+  display: flex;
+  width: 100%;
+}
+
+/* Lemon fill with ink text — the main tone doing the heavy lifting. */
+.primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.primary:not(:disabled):hover {
+  background: var(--lemon-500);
+}
+
+.outline {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.outline:not(:disabled):hover {
+  border-color: var(--lemon-400);
+}
+
+/* Cool counterpart, used where an action should read as secondary. */
+.soft {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+}
+
+.soft:not(:disabled):hover {
+  background: var(--sky-200);
+}

@@ -1,0 +1,81 @@
+.viewportWrap {
+  /* Break out of the section padding so slides can peek to the screen edge. */
+  margin: 0 calc(var(--page-padding) * -1);
+}
+
+.viewport {
+  overflow: hidden;
+}
+
+.container {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+}
+
+.slide {
+  flex: 0 0 76%;
+  min-width: 0;
+  padding: 0 6px;
+}
+
+.slideButton {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--lemon-100);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-base) var(--ease-out), opacity var(--duration-base) var(--ease-out);
+  transform: scale(0.94);
+  opacity: 0.55;
+}
+
+/* Only the centred slide is at full size — a soft focus on the current photo. */
+.slide[data-active='true'] .slideButton {
+  transform: none;
+  opacity: 1;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.dots {
+  display: flex;
+  gap: 7px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--line);
+  transition: width var(--duration-base) var(--ease-out), background var(--duration-base) var(--ease-out);
+}
+
+.dot[data-active='true'] {
+  width: 20px;
+  background: var(--color-primary);
+}
+
+.counter {
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  letter-spacing: 0.14em;
+  color: var(--ink-subtle);
+}
+
+.counter span {
+  color: var(--ink);
+}

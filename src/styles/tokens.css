@@ -1,0 +1,111 @@
+/*
+ * Design tokens — modern minimal, soft yellow as the main tone with sky blue
+ * as the cool accent.
+ *
+ * Lemon owns the field: page background, card fills, primary buttons, dividers.
+ * Because lemon is too light to carry text on white, anything that must be read
+ * sits in --ink (on lemon fills) or --sky-700 (as a coloured text accent).
+ */
+:root {
+  /* Lemon — warm primary */
+  --lemon-50: #fffdf3;
+  --lemon-100: #fdf8e2;
+  --lemon-200: #f9f0c2;
+  --lemon-300: #f4e498;
+  --lemon-400: #ecd469;
+  --lemon-500: #dcbf40;
+  --lemon-600: #b99c26;
+  --lemon-700: #8d761b;
+
+  /* Sky — cool accent */
+  --sky-50: #f4faff;
+  --sky-100: #e3f1fb;
+  --sky-200: #c7e3f6;
+  --sky-300: #9bcded;
+  --sky-400: #6fb4e2;
+  --sky-500: #4a9fd8;
+  --sky-600: #3583bb;
+  --sky-700: #276694;
+
+  /* Neutrals — warmed slightly so they sit inside the yellow field */
+  --ink: #2c2a20;
+  --ink-muted: #6f6a5b;
+  --ink-subtle: #a09a89;
+  --line: #efe8cf;
+  --line-cool: #e3eef6;
+  --bg: #ffffff;
+  --bg-soft: #fffdf7;
+
+  /* Semantic */
+  --color-primary: var(--lemon-400);
+  --color-primary-strong: var(--lemon-600);
+  --color-on-primary: var(--ink);
+  --color-accent: var(--sky-400);
+  --color-accent-strong: var(--sky-700);
+  --color-accent-soft: var(--sky-100);
+  --color-focus: var(--sky-600);
+  --color-danger: #c9603f;
+
+  /* The signature blend: lemon leads, a cool sky wash settles at the bottom. */
+  --gradient-page: linear-gradient(172deg, var(--lemon-100) 0%, var(--lemon-50) 38%, #ffffff 72%, var(--sky-50) 100%);
+  --gradient-accent: linear-gradient(100deg, var(--lemon-300) 0%, var(--sky-200) 100%);
+  /* Deep enough that white cover text stays readable over a pale photo. */
+  --gradient-veil: linear-gradient(
+    to top,
+    rgba(44, 42, 32, 0.72) 0%,
+    rgba(44, 42, 32, 0.42) 28%,
+    rgba(44, 42, 32, 0.1) 58%,
+    rgba(44, 42, 32, 0) 100%
+  );
+
+  /* Typography */
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo',
+    'Malgun Gothic', sans-serif;
+  --font-serif: 'Cormorant Garamond', 'Apple SD Gothic Neo', serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.75rem;
+  --space-8: 4rem;
+  --space-9: 5.5rem;
+
+  /* Shape */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(141, 118, 27, 0.07), 0 2px 8px rgba(141, 118, 27, 0.05);
+  --shadow-md: 0 4px 16px rgba(141, 118, 27, 0.1);
+  --shadow-lg: 0 12px 40px rgba(141, 118, 27, 0.16);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 180ms;
+  --duration-base: 320ms;
+  --duration-slow: 720ms;
+
+  /* Layout — the whole invitation lives inside a phone-width column. */
+  --page-width: 430px;
+  --page-padding: 26px;
+  --z-sticky: 20;
+  --z-overlay: 60;
+  --z-toast: 80;
+  --z-intro: 100;
+}

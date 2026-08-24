@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Deploy from the Firebase console (Firestore → 규칙) or with
+// `firebase deploy --only firestore:rules`.
+//
+// Writers are anonymous-auth users. Their uid is stamped on each document, and
+// that is what gates deletion — a guest can remove their own message and no one
+// else's. RSVP answers are write-only from the browser; the couple reads them
+// in the console.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /guestbook/{entryId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['name', 'message', 'createdAt', 'ownerId'])
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 20
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 300
+        && request.resource.data.createdAt is number;
+
+      allow delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+
+      // Messages are never edited in place — delete and write a new one.
+      allow update: if false;
+    }
+
+    match /rsvp/{responseId} {
+      // Attendance answers include names and phone numbers, so nothing on the
+      // public site may read them back.
+      allow read: if false;
+
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 20
+        && request.resource.data.attending is bool
+        && request.resource.data.headcount is int
+        && request.resource.data.headcount >= 0
+        && request.resource.data.headcount <= 10;
+
+      allow update, delete: if false;
+    }
+  }
+}

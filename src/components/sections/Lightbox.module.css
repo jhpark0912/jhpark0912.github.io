@@ -1,0 +1,96 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(26, 25, 19, 0.94);
+  animation: fade-in var(--duration-base) var(--ease-out);
+}
+
+.close {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top));
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  color: rgba(255, 253, 243, 0.9);
+}
+
+.viewport {
+  overflow: hidden;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  /* pinch-zoom stays available so guests can inspect a photo closely. */
+  touch-action: pan-y pinch-zoom;
+}
+
+.slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-4);
+}
+
+.image {
+  max-width: 100%;
+  max-height: 74svh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
+.footer {
+  position: absolute;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 253, 243, 0.1);
+}
+
+.arrow {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  color: rgba(255, 253, 243, 0.9);
+}
+
+.arrow:active {
+  background: rgba(255, 253, 243, 0.16);
+}
+
+.counter {
+  min-width: 54px;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  letter-spacing: 0.12em;
+  color: rgba(255, 253, 243, 0.85);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

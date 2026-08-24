@@ -1,0 +1,62 @@
+.section {
+  position: relative;
+  padding: var(--space-9) var(--page-padding);
+}
+
+.tinted {
+  background: var(--lemon-50);
+}
+
+/* Hairline seams instead of hard edges between neighbouring sections. */
+.tinted::before,
+.tinted::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+
+.tinted::before {
+  top: 0;
+}
+
+.tinted::after {
+  bottom: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-7);
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  font-style: italic;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+}
+
+.title {
+  display: block;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.rule > span {
+  display: block;
+  width: 34px;
+  height: 2px;
+  margin-top: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--gradient-accent);
+}

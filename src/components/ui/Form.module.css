@@ -1,0 +1,131 @@
+/* Shared form styling for the RSVP sheet and the guestbook composer. */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.required::after {
+  content: '*';
+  margin-left: 3px;
+  color: var(--color-danger);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  /* 16px keeps iOS Safari from zooming the page on focus. */
+  font-size: 16px;
+  line-height: 1.6;
+  transition: border-color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--ink-subtle);
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--lemon-400);
+  background: var(--bg);
+}
+
+.textarea {
+  min-height: 108px;
+  resize: vertical;
+}
+
+.hint {
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+}
+
+.counter {
+  align-self: flex-end;
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.error {
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+}
+
+/* Segmented choice — used for side, attendance and meal. */
+.choices {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-2);
+}
+
+.choice {
+  min-height: 46px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.choice[aria-pressed='true'] {
+  border-color: var(--lemon-500);
+  background: var(--lemon-100);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.stepperButton {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full);
+  background: var(--bg-soft);
+  font-size: var(--text-lg);
+  color: var(--ink);
+}
+
+.stepperButton:disabled {
+  opacity: 0.4;
+}
+
+.stepperValue {
+  min-width: 52px;
+  text-align: center;
+  font-size: var(--text-md);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

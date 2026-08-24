@@ -1,0 +1,22 @@
+.page {
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  /* Off-phone the column floats on a soft lemon field. */
+  background:
+    radial-gradient(1200px 600px at 50% -10%, var(--lemon-200), transparent 70%),
+    var(--lemon-100);
+}
+
+.column {
+  position: relative;
+  width: 100%;
+  max-width: var(--page-width);
+  background: var(--gradient-page);
+}
+
+@media (min-width: 480px) {
+  .column {
+    box-shadow: 0 0 60px rgba(141, 118, 27, 0.14);
+  }
+}

@@ -1,0 +1,45 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.note {
+  font-size: var(--text-sm);
+  line-height: 1.9;
+  color: var(--ink-muted);
+}
+
+.deadline {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-accent-strong);
+  letter-spacing: -0.01em;
+}
+
+.done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) 0 var(--space-2);
+  text-align: center;
+}
+
+.doneTitle {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.doneBody {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}

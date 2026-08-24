@@ -1,0 +1,94 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(44, 42, 32, 0.42);
+  backdrop-filter: blur(2px);
+  animation: fade-in var(--duration-base) var(--ease-out);
+}
+
+.sheet {
+  position: relative;
+  width: min(var(--page-width), 100vw);
+  max-height: min(88vh, 780px);
+  display: flex;
+  flex-direction: column;
+  padding: 10px var(--page-padding) calc(var(--space-5) + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lg);
+  animation: sheet-up var(--duration-base) var(--ease-out);
+}
+
+.handle {
+  width: 38px;
+  height: 4px;
+  margin: 0 auto var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--line);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-right: -6px;
+  border-radius: var(--radius-full);
+  color: var(--ink-muted);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.close:active {
+  background: var(--lemon-100);
+}
+
+.description {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  color: var(--ink-muted);
+}
+
+.body {
+  margin-top: var(--space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(14%);
+    opacity: 0.4;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
