@@ -12,6 +12,8 @@
  * from that device. See README for the matching rules.
  */
 
+import { isFirebaseConfigured, loadFirebase } from './firebase'
+
 export interface GuestbookEntry {
   id: string
   name: string
@@ -53,9 +55,9 @@ export interface Store {
   getOwnerId(): Promise<string>
   listGuestbook(): Promise<GuestbookEntry[]>
   /**
-   * Returns as soon as the write is queued rather than when it lands, so the
-   * message appears the moment a guest submits it. Firestore applies the write
-   * locally first and syncs in the background; watch `saved` to catch refusals.
+   * Returns as soon as the write is on its way rather than when it lands, so
+   * the message appears the moment a guest submits it instead of after a round
+   * trip. Watch `saved` to catch a refusal and take the entry back out.
    */
   addGuestbook(draft: GuestbookDraft): Promise<PendingEntry>
   removeGuestbook(id: string): Promise<void>
@@ -65,8 +67,6 @@ export interface Store {
 export const GUESTBOOK_LIMIT = 300
 export const NAME_MAX = 20
 export const MESSAGE_MAX = 300
-
-import { isFirebaseConfigured, loadFirebase } from './firebase'
 
 /* ------------------------------------------------------------------ local -- */
 
@@ -145,7 +145,7 @@ const localStore: Store = {
 interface FirebaseContext {
   db: any
   uid: string
-  sdk: typeof import('firebase/firestore')
+  sdk: typeof import('firebase/firestore/lite')
 }
 
 let contextPromise: Promise<FirebaseContext> | null = null

@@ -23,7 +23,7 @@ export default defineConfig({
         manualChunks: {
           // Firebase is only needed once a guest opens the guestbook or RSVP,
           // so keep it out of the initial bundle.
-          firebase: ['firebase/app', 'firebase/firestore', 'firebase/auth'],
+          firebase: ['firebase/app', 'firebase/firestore/lite', 'firebase/auth'],
         },
       },
     },

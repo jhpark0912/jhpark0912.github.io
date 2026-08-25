@@ -16,6 +16,14 @@
   color: var(--ink-subtle);
 }
 
+.reason {
+  max-width: 32ch;
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  color: var(--ink-subtle);
+  word-break: break-all;
+}
+
 .list {
   display: flex;
   flex-direction: column;

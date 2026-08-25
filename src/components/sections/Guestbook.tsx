@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { wedding } from '../../data/wedding'
 import { MESSAGE_MAX, NAME_MAX, store, type GuestbookEntry } from '../../lib/store'
+import { describeError, withTimeout } from '../../lib/firebase'
 import { useInView } from '../../hooks/useInView'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
@@ -9,6 +10,9 @@ import { BottomSheet } from '../ui/BottomSheet'
 import { useToast } from '../ui/ToastProvider'
 import form from '../ui/Form.module.css'
 import styles from './Guestbook.module.css'
+
+/** Long enough for a slow phone connection, short enough not to look frozen. */
+const LOAD_TIMEOUT_MS = 15_000
 
 const dateFormatter = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
@@ -23,6 +27,7 @@ export function Guestbook() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [ownerId, setOwnerId] = useState('')
   const [loadState, setLoadState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
+  const [loadError, setLoadError] = useState('')
   const [page, setPage] = useState(0)
 
   const [open, setOpen] = useState(false)
@@ -36,12 +41,18 @@ export function Guestbook() {
 
   const load = useCallback(async () => {
     setLoadState('loading')
+    setLoadError('')
     try {
-      const [list, id] = await Promise.all([store.listGuestbook(), store.getOwnerId()])
+      const [list, id] = await withTimeout(
+        Promise.all([store.listGuestbook(), store.getOwnerId()]),
+        LOAD_TIMEOUT_MS,
+        '메시지를 불러오지 못했습니다',
+      )
       setEntries(list)
       setOwnerId(id)
       setLoadState('ready')
-    } catch {
+    } catch (error) {
+      setLoadError(describeError(error))
       setLoadState('error')
     }
   }, [])
@@ -124,6 +135,9 @@ export function Guestbook() {
         {loadState === 'error' && (
           <div className={styles.state}>
             <p>메시지를 불러오지 못했어요.</p>
+            {/* The reason is what makes a report actionable when someone
+                tells the couple the guestbook is broken. */}
+            {loadError && <p className={styles.reason}>{loadError}</p>}
             <Button variant="outline" size="sm" onClick={() => void load()}>
               다시 시도
             </Button>

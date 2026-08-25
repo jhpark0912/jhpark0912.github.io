@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { isFirebaseConfigured } from '../lib/firebase'
+import { describeError, isFirebaseConfigured, withTimeout } from '../lib/firebase'
 import {
   deleteGuestbookEntry,
   listGuestbook,
@@ -21,6 +21,8 @@ const timestamp = new Intl.DateTimeFormat('ko-KR', {
   dateStyle: 'medium',
   timeStyle: 'short',
 })
+
+const LOAD_TIMEOUT_MS = 15_000
 
 const MEAL_LABEL: Record<string, string> = { yes: '식사', no: '식사 안 함', undecided: '미정' }
 
@@ -94,14 +96,17 @@ function LoginForm({ onDone }: { onDone: () => void }) {
 function GuestbookPanel() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [reason, setReason] = useState('')
   const [busyId, setBusyId] = useState('')
 
   const load = useCallback(async () => {
     setState('loading')
+    setReason('')
     try {
-      setEntries(await listGuestbook())
+      setEntries(await withTimeout(listGuestbook(), LOAD_TIMEOUT_MS, '방명록을 불러오지 못했습니다'))
       setState('ready')
-    } catch {
+    } catch (error) {
+      setReason(describeError(error))
       setState('error')
     }
   }, [])
@@ -128,6 +133,7 @@ function GuestbookPanel() {
     return (
       <div className={styles.state}>
         <p>불러오지 못했습니다.</p>
+        {reason && <p className={styles.stateNote}>{reason}</p>}
         <button type="button" className={styles.ghost} onClick={() => void load()}>
           다시 시도
         </button>
@@ -170,13 +176,16 @@ function GuestbookPanel() {
 function RsvpPanel() {
   const [entries, setEntries] = useState<RsvpEntry[]>([])
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [reason, setReason] = useState('')
 
   const load = useCallback(async () => {
     setState('loading')
+    setReason('')
     try {
-      setEntries(await listRsvp())
+      setEntries(await withTimeout(listRsvp(), LOAD_TIMEOUT_MS, '응답을 불러오지 못했습니다'))
       setState('ready')
-    } catch {
+    } catch (error) {
+      setReason(describeError(error))
       setState('error')
     }
   }, [])
@@ -190,6 +199,7 @@ function RsvpPanel() {
     return (
       <div className={styles.state}>
         <p>불러오지 못했습니다.</p>
+        {reason && <p className={styles.stateNote}>{reason}</p>}
         <button type="button" className={styles.ghost} onClick={() => void load()}>
           다시 시도
         </button>
