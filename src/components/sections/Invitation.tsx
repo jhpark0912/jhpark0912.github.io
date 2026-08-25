@@ -3,6 +3,7 @@ import type { Host } from '../../data/wedding'
 import { useContent } from '../../lib/useSiteConfig'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
+import { SpotPhoto } from '../ui/SpotPhoto'
 import styles from './Invitation.module.css'
 
 /**
@@ -103,7 +104,7 @@ function HostLine({ host }: { host: Host }) {
 }
 
 export function Invitation() {
-  const { groom, bride, greeting } = useContent()
+  const { groom, bride, greeting, photos } = useContent()
 
   return (
     <Section id="invitation" eyebrow="Invitation" title="초대합니다">
@@ -127,6 +128,8 @@ export function Invitation() {
             </Reveal>
           ))}
         </div>
+
+        <SpotPhoto photo={photos.hosts} ratio="16 / 9" delay={120} className={styles.familyPhoto} />
 
         <Reveal className={styles.hosts} delay={140}>
           <HostLine host={groom} />

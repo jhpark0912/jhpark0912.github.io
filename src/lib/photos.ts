@@ -18,7 +18,7 @@ import { isFirebaseConfigured, loadFirebase } from './firebase'
 import { readPublicDoc } from './firestoreRest'
 import type { WeddingContent } from '../data/wedding'
 import type { SiteConfig } from './siteConfig'
-import { referencedPhotoIds } from './siteConfig'
+import { referencedPhotoIds, SPOT_KEYS } from './siteConfig'
 
 /** Longest edge after resizing. Roughly a phone screen at 3× density. */
 const MAX_EDGE = 1400
@@ -248,12 +248,18 @@ export async function collectOrphans(config: SiteConfig): Promise<number> {
  *
  * Only entries carrying a `photoId` are touched, so photos bundled under
  * `public/images/` keep working exactly as before. A photo whose document has
- * gone missing is dropped from the gallery rather than rendered broken.
+ * gone missing is dropped from the gallery rather than rendered broken; a
+ * between-sections photo in the same state is emptied, which is what its own
+ * section already reads as "no photo here".
  */
 export async function resolvePhotos(content: WeddingContent): Promise<WeddingContent> {
   const ids = new Set<string>()
   for (const photo of content.gallery) if (photo.photoId) ids.add(photo.photoId)
   if (content.cover.photoId) ids.add(content.cover.photoId)
+  for (const key of SPOT_KEYS) {
+    const id = content.photos[key].photoId
+    if (id) ids.add(id)
+  }
   if (ids.size === 0) return content
 
   const entries = await Promise.all(
@@ -282,7 +288,17 @@ export async function resolvePhotos(content: WeddingContent): Promise<WeddingCon
     })
     .filter((photo): photo is (typeof content.gallery)[number] => photo !== null)
 
-  return { ...content, cover, gallery }
+  const photos = { ...content.photos }
+  for (const key of SPOT_KEYS) {
+    const photo = photos[key]
+    if (!photo.photoId) continue
+    const stored = found.get(photo.photoId)
+    photos[key] = stored
+      ? { ...photo, src: stored.src, width: stored.width, height: stored.height }
+      : { ...photo, src: '' }
+  }
+
+  return { ...content, cover, gallery, photos }
 }
 
 /** Human-readable size of a data URL, for the admin page's weight warnings. */

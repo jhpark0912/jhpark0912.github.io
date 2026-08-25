@@ -1,6 +1,7 @@
 import { useContent } from '../../lib/useSiteConfig'
 import { formatDotDate } from '../../lib/date'
 import { Reveal } from '../ui/Reveal'
+import { SpotPhoto } from '../ui/SpotPhoto'
 import styles from './Footer.module.css'
 
 export function Footer() {
@@ -9,6 +10,10 @@ export function Footer() {
 
   return (
     <footer className={styles.footer}>
+      {/* The closing picture belongs to the goodbye, so it lives inside the
+          footer rather than as a band above it — one block, one seam. */}
+      <SpotPhoto photo={wedding.photos.farewell} className={styles.photo} />
+
       <Reveal className={styles.inner}>
         <p className={styles.names}>
           {wedding.groom.nameEn} <span aria-hidden="true">&amp;</span> {wedding.bride.nameEn}

@@ -4,6 +4,7 @@ import { buildMonthGrid, daysBetween, formatKoreanTime, formatWeekday, toKstYmd 
 import { useCountdown } from '../../hooks/useCountdown'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
+import { SpotPhoto } from '../ui/SpotPhoto'
 import styles from './CalendarSection.module.css'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
@@ -27,6 +28,8 @@ export function CalendarSection() {
           {formatWeekday(date)} {formatKoreanTime(date)}
         </p>
       </Reveal>
+
+      <SpotPhoto photo={wedding.photos.calendar} delay={80} className={styles.photo} />
 
       {/*
         The calendar restates a date the headline above already announces, so it

@@ -60,6 +60,27 @@ export interface CoverPhoto {
   alt: string
 }
 
+/**
+ * The one-off photos placed between sections.
+ *
+ * They carry the same shape as a gallery photo — an uploaded photo is a
+ * `photoId` whose bytes arrive later, a bundled one is a path — because the
+ * storing, resolving and orphan-collecting code is the same for both.
+ */
+export interface SpotPhotos {
+  /** Above the parents' and the couple's names, as a wide band. */
+  hosts: GalleryPhoto
+  /** Between the wedding date and the calendar. */
+  calendar: GalleryPhoto
+  /** The closing picture, just above the last greeting. */
+  farewell: GalleryPhoto
+}
+
+/** A slot with nothing in it. Rendered as nothing, not as a placeholder. */
+export function emptyPhoto(): GalleryPhoto {
+  return { src: '', alt: '', width: 1000, height: 1250 }
+}
+
 export interface TransportGuide {
   title: string
   lines: string[]
@@ -104,6 +125,13 @@ export interface WeddingContent {
   venue: Venue
   gallery: GalleryPhoto[]
   cover: CoverPhoto
+  /**
+   * Single photos that sit inside the invitation's flow rather than in the
+   * gallery — places where the reading pauses and a picture says what the text
+   * around it cannot. A slot with no photo renders nothing at all, so the page
+   * reads exactly as it does today until one is chosen.
+   */
+  photos: SpotPhotos
   /** Empty lists hide the gift section entirely — no half-filled accounts. */
   accounts: {
     groom: BankAccount[]
@@ -199,6 +227,12 @@ export const wedding: WeddingContent = {
   cover: {
     image: '/images/cover.svg',
     alt: '신랑 신부의 웨딩 사진',
+  },
+
+  photos: {
+    hosts: emptyPhoto(),
+    calendar: emptyPhoto(),
+    farewell: emptyPhoto(),
   },
 
   accounts: {

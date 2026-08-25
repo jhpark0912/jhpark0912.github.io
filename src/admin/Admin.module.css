@@ -543,6 +543,19 @@
   flex-basis: 100%;
 }
 
+/* These stack inside one group; the divider is what keeps a row's title from
+   reading as a caption for the photo above it. */
+.spotRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.spotRow + .spotRow {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
 .thumbEmpty {
   display: grid;
   place-items: center;

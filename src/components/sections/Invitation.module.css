@@ -40,6 +40,25 @@
 }
 
 /*
+ * The family photo runs the full width of the phone, past the section's own
+ * padding, and is cropped short.
+ *
+ * Wide and low rather than large: it has to be recognisably the people whose
+ * names follow it without becoming the picture the section is about — the words
+ * above it are still what the section is for. Spanning edge to edge is what
+ * makes a band that low look deliberate instead of undersized.
+ */
+.familyPhoto {
+  width: calc(100% + var(--page-padding) * 2);
+  margin-left: calc(var(--page-padding) * -1);
+  margin-right: calc(var(--page-padding) * -1);
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  box-shadow: none;
+}
+
+/*
  * One grid shared by both host lines, in two columns: the parents together
  * with the "의 아들" / "의 딸" phrase, and the host's own name.
  *

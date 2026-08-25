@@ -9,6 +9,12 @@
   background: linear-gradient(to bottom, var(--bg), var(--lemon-100));
 }
 
+/* Centred and held short of the full column: a farewell photo, not a banner. */
+.photo {
+  max-width: 300px;
+  margin: 0 auto var(--space-7);
+}
+
 .inner {
   display: flex;
   flex-direction: column;

@@ -1,0 +1,21 @@
+.frame {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  box-shadow: var(--shadow-sm);
+}
+
+/*
+ * A tall crop, because these are portraits of two people standing together and
+ * a phone has height to spare where it has no width. The photo's own ratio is
+ * still written on the element, so the space is reserved correctly before the
+ * crop applies.
+ */
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--spot-ratio, 4 / 5);
+  object-fit: cover;
+}

@@ -24,6 +24,7 @@ import {
   type CoverPhoto,
   type GalleryPhoto,
   type Host,
+  type SpotPhotos,
   type TransportGuide,
   type WeddingContent,
 } from '../data/wedding'
@@ -37,6 +38,9 @@ export interface SiteConfig {
 }
 
 export type ConfigSlot = 'draft' | 'published'
+
+/** Named once so adding a slot cannot be half-done. */
+export const SPOT_KEYS = ['hosts', 'calendar', 'farewell'] as const satisfies readonly (keyof SpotPhotos)[]
 
 /* --------------------------------------------------------------- defaults -- */
 
@@ -136,6 +140,34 @@ function mergeGallery(value: unknown, fallback: GalleryPhoto[]): GalleryPhoto[] 
     .filter((photo) => Boolean(photo.photoId) || photo.src.length > 0)
 }
 
+/**
+ * One between-sections photo.
+ *
+ * Unlike the gallery there is nothing to filter out here: a slot naming neither
+ * an upload nor a bundled file is simply an empty slot, and an empty slot is
+ * how a couple turns the photo off.
+ */
+function mergeSpotPhoto(value: unknown): GalleryPhoto {
+  const raw = bag(value)
+  const photoId = str(raw.photoId, '')
+  return {
+    ...(photoId ? { photoId } : {}),
+    src: str(raw.src, ''),
+    alt: str(raw.alt, ''),
+    width: num(raw.width, 1000),
+    height: num(raw.height, 1250),
+  }
+}
+
+function mergeSpotPhotos(value: unknown): SpotPhotos {
+  const raw = bag(value)
+  return {
+    hosts: mergeSpotPhoto(raw.hosts),
+    calendar: mergeSpotPhoto(raw.calendar),
+    farewell: mergeSpotPhoto(raw.farewell),
+  }
+}
+
 function mergeCover(value: unknown, fallback: CoverPhoto): CoverPhoto {
   const raw = bag(value)
   const photoId = str(raw.photoId, '')
@@ -182,6 +214,7 @@ function mergeContent(value: unknown): WeddingContent {
     },
     gallery: mergeGallery(raw.gallery, base.gallery),
     cover: mergeCover(raw.cover, base.cover),
+    photos: mergeSpotPhotos(raw.photos),
     accounts: {
       groom: mergeAccounts(accounts.groom, base.accounts.groom),
       bride: mergeAccounts(accounts.bride, base.accounts.bride),
@@ -220,13 +253,21 @@ export function forStorage(config: SiteConfig): { content: WeddingContent; secti
   const content = structuredClone(config.content)
   content.gallery = content.gallery.map((photo) => (photo.photoId ? { ...photo, src: '' } : photo))
   if (content.cover.photoId) content.cover = { ...content.cover, image: '' }
+  for (const key of SPOT_KEYS) {
+    const photo = content.photos[key]
+    if (photo.photoId) content.photos[key] = { ...photo, src: '' }
+  }
   return { content, sections: config.sections.map((section) => ({ ...section })) }
 }
 
-/** Every photo document id the config depends on, cover included. */
+/** Every photo document id the config depends on — cover and spots included. */
 export function referencedPhotoIds(config: SiteConfig): string[] {
   const ids = config.content.gallery.map((photo) => photo.photoId).filter((id): id is string => Boolean(id))
   if (config.content.cover.photoId) ids.push(config.content.cover.photoId)
+  for (const key of SPOT_KEYS) {
+    const id = config.content.photos[key].photoId
+    if (id) ids.push(id)
+  }
   return [...new Set(ids)]
 }
 

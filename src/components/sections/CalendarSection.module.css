@@ -17,6 +17,12 @@
   color: var(--ink-muted);
 }
 
+/* Sits between the date and the calendar, so it needs the gap on both sides
+   that .headline's own bottom margin only gives it above. */
+.photo {
+  margin-bottom: var(--space-6);
+}
+
 .calendarWrap {
   display: block;
 }
