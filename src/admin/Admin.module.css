@@ -1,0 +1,309 @@
+/* A working tool, not the invitation — denser type, table-first, but built on
+   the same tokens so it still belongs to the project. */
+
+.shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-9);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.who {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+}
+
+/* ------------------------------------------------------------------ login */
+
+.login {
+  max-width: 380px;
+  width: 100%;
+  margin: 12vh auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-5);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.loginTitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.loginNote {
+  margin-top: -10px;
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.field input {
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  /* 16px keeps iOS Safari from zooming the page on focus. */
+  font-size: 16px;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--lemon-400);
+  background: var(--bg);
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.primary {
+  min-height: 46px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.primary:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.ghost {
+  flex-shrink: 0;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full);
+  background: var(--bg);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+}
+
+.danger {
+  align-self: flex-start;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  background: #fbeae4;
+  color: #a4442a;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.danger:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.error {
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+}
+
+/* ------------------------------------------------------------------- tabs */
+
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tabs button {
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.tabs button[data-active='true'] {
+  background: var(--lemon-100);
+  border-color: var(--lemon-400);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.panelBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.count {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) 0;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--ink-subtle);
+}
+
+.stateNote {
+  max-width: 44ch;
+  font-size: var(--text-xs);
+}
+
+/* -------------------------------------------------------------- guestbook */
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.cardHead time {
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+}
+
+.message {
+  font-size: var(--text-sm);
+  line-height: 1.75;
+  color: var(--ink-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ------------------------------------------------------------------- rsvp */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--lemon-100);
+  border-radius: var(--radius-md);
+}
+
+.stats dt {
+  font-size: var(--text-xs);
+  color: var(--lemon-700);
+}
+
+.stats dd {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.statsNote {
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+}
+
+/* Wide table scrolls inside its own box; the page never scrolls sideways. */
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table th,
+.table td {
+  padding: 11px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.table thead th {
+  background: var(--bg-soft);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--ink-subtle);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr[data-declined='true'] {
+  color: var(--ink-subtle);
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  max-width: 240px;
+  white-space: normal;
+  color: var(--ink-muted);
+}

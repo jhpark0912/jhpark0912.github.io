@@ -20,6 +20,19 @@ export function BottomSheet({ open, onClose, title, description, children }: Bot
 
   useLockBodyScroll(open)
 
+  // Callers pass an inline `onClose`, so it is a new function on every render.
+  // Keeping it in a ref keeps it out of the effect's dependencies below.
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
+
+  /*
+   * Runs only when the sheet opens or closes. Depending on `onClose` here would
+   * tear the effect down and set it up again on every keystroke, and the
+   * teardown's focus restore would throw the caret out of the field the guest
+   * is typing in.
+   */
   useEffect(() => {
     if (!open) return
 
@@ -29,7 +42,7 @@ export function BottomSheet({ open, onClose, title, description, children }: Bot
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.stopPropagation()
-        onClose()
+        onCloseRef.current()
       }
     }
 
@@ -38,7 +51,7 @@ export function BottomSheet({ open, onClose, title, description, children }: Bot
       document.removeEventListener('keydown', onKeyDown)
       previouslyFocused.current?.focus()
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 

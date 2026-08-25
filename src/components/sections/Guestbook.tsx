@@ -77,7 +77,10 @@ export function Guestbook() {
     setError('')
     setSaving(true)
     try {
-      const entry = await store.addGuestbook({ name: trimmedName, message: trimmedMessage })
+      const { entry, saved } = await store.addGuestbook({ name: trimmedName, message: trimmedMessage })
+
+      // Show it right away — waiting on the server acknowledgement here is what
+      // made submitting feel like it hung on a slow connection.
       setEntries((current) => [entry, ...current])
       if (!ownerId) setOwnerId(entry.ownerId)
       setPage(0)
@@ -85,6 +88,12 @@ export function Guestbook() {
       setMessage('')
       setOpen(false)
       toast('축하 메시지를 남겼어요.')
+
+      // If the server refuses it after all, take the message back out.
+      saved.catch(() => {
+        setEntries((current) => current.filter((item) => item.id !== entry.id))
+        toast('메시지를 저장하지 못했어요. 다시 시도해 주세요.')
+      })
     } catch {
       setError('저장에 실패했어요. 잠시 후 다시 시도해 주세요.')
     } finally {

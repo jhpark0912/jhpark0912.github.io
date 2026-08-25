@@ -33,14 +33,21 @@ export function Lightbox({ photos, startIndex, onClose }: LightboxProps) {
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi])
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
 
+  // Same reasoning as BottomSheet: keep the handlers out of the dependency list
+  // so the listener is bound once, on open, and torn down once, on close.
+  const handlers = useRef({ onClose, scrollPrev, scrollNext })
+  useEffect(() => {
+    handlers.current = { onClose, scrollPrev, scrollNext }
+  })
+
   useEffect(() => {
     previouslyFocused.current = document.activeElement as HTMLElement | null
     dialogRef.current?.focus()
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-      if (event.key === 'ArrowLeft') scrollPrev()
-      if (event.key === 'ArrowRight') scrollNext()
+      if (event.key === 'Escape') handlers.current.onClose()
+      if (event.key === 'ArrowLeft') handlers.current.scrollPrev()
+      if (event.key === 'ArrowRight') handlers.current.scrollNext()
     }
 
     document.addEventListener('keydown', onKeyDown)
@@ -48,7 +55,7 @@ export function Lightbox({ photos, startIndex, onClose }: LightboxProps) {
       document.removeEventListener('keydown', onKeyDown)
       previouslyFocused.current?.focus()
     }
-  }, [onClose, scrollPrev, scrollNext])
+  }, [])
 
   return createPortal(
     <div

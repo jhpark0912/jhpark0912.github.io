@@ -40,12 +40,24 @@ export interface RsvpDraft {
   note: string
 }
 
+export interface PendingEntry {
+  /** Ready to render immediately — the id is generated before the round trip. */
+  entry: GuestbookEntry
+  /** Settles once the server has accepted the write; rejects if it refuses. */
+  saved: Promise<void>
+}
+
 export interface Store {
   /** 'firestore' when real persistence is configured, 'local' for the mock. */
   readonly mode: 'firestore' | 'local'
   getOwnerId(): Promise<string>
   listGuestbook(): Promise<GuestbookEntry[]>
-  addGuestbook(draft: GuestbookDraft): Promise<GuestbookEntry>
+  /**
+   * Returns as soon as the write is queued rather than when it lands, so the
+   * message appears the moment a guest submits it. Firestore applies the write
+   * locally first and syncs in the background; watch `saved` to catch refusals.
+   */
+  addGuestbook(draft: GuestbookDraft): Promise<PendingEntry>
   removeGuestbook(id: string): Promise<void>
   submitRsvp(draft: RsvpDraft): Promise<void>
 }
@@ -54,18 +66,7 @@ export const GUESTBOOK_LIMIT = 300
 export const NAME_MAX = 20
 export const MESSAGE_MAX = 300
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-}
-
-const isFirebaseConfigured = Object.values(firebaseConfig).every(
-  (value) => typeof value === 'string' && value.length > 0,
-)
+import { isFirebaseConfigured, loadFirebase } from './firebase'
 
 /* ------------------------------------------------------------------ local -- */
 
@@ -122,7 +123,7 @@ const localStore: Store = {
     }
     const entries = readLocal<GuestbookEntry[]>(LOCAL_GUESTBOOK_KEY, [])
     writeLocal(LOCAL_GUESTBOOK_KEY, [entry, ...entries].slice(0, GUESTBOOK_LIMIT))
-    return entry
+    return { entry, saved: Promise.resolve() }
   },
 
   async removeGuestbook(id) {
@@ -152,19 +153,11 @@ let contextPromise: Promise<FirebaseContext> | null = null
 async function getContext(): Promise<FirebaseContext> {
   if (!contextPromise) {
     contextPromise = (async () => {
-      const [appSdk, firestoreSdk, authSdk] = await Promise.all([
-        import('firebase/app'),
-        import('firebase/firestore'),
-        import('firebase/auth'),
-      ])
-
-      const app = appSdk.getApps().length ? appSdk.getApp() : appSdk.initializeApp(firebaseConfig)
-      const auth = authSdk.getAuth(app)
+      const { db, auth, firestore, authSdk } = await loadFirebase()
       // Returns the already-signed-in anonymous user when one exists, so the
       // same uid — and therefore the same delete rights — persists per browser.
       const credential = await authSdk.signInAnonymously(auth)
-
-      return { db: firestoreSdk.getFirestore(app), uid: credential.user.uid, sdk: firestoreSdk }
+      return { db, uid: credential.user.uid, sdk: firestore }
     })().catch((error) => {
       contextPromise = null
       throw error
@@ -200,14 +193,17 @@ const firestoreStore: Store = {
 
   async addGuestbook(draft) {
     const { db, sdk, uid } = await getContext()
-    const entry = {
+    // Generating the reference locally gives us the id up front, so the entry
+    // can be rendered before the server has been asked about it.
+    const ref = sdk.doc(sdk.collection(db, 'guestbook'))
+    const data = {
       name: draft.name,
       message: draft.message,
       createdAt: Date.now(),
       ownerId: uid,
     }
-    const created = await sdk.addDoc(sdk.collection(db, 'guestbook'), entry)
-    return { id: created.id, ...entry }
+
+    return { entry: { id: ref.id, ...data }, saved: sdk.setDoc(ref, data) }
   },
 
   async removeGuestbook(id) {

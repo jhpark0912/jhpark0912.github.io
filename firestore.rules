@@ -3,17 +3,34 @@ rules_version = '2';
 // Deploy from the Firebase console (Firestore → 규칙) or with
 // `firebase deploy --only firestore:rules`.
 //
-// Writers are anonymous-auth users. Their uid is stamped on each document, and
-// that is what gates deletion — a guest can remove their own message and no one
-// else's. RSVP answers are write-only from the browser; the couple reads them
-// in the console.
+// Two kinds of writer:
+//
+//   Guests are signed in anonymously. Their uid is stamped on each document and
+//   that is what gates deletion, so a guest can remove their own message and no
+//   one else's.
+//
+//   Admins are real accounts listed in the `admins` collection — one document
+//   per uid, added by hand in the console. Membership lives in data rather than
+//   in these rules, so adding or removing an admin never means editing and
+//   re-publishing rules. Admins may delete any message and are the only ones
+//   who can read the RSVP responses.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // exists() is evaluated server-side and ignores the rules below, so the
+    // admins collection can stay completely unreadable from the client.
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
 
     match /guestbook/{entryId} {
       allow read: if true;
 
-      allow create: if request.auth != null
+      allow create: if isSignedIn()
         && request.resource.data.keys().hasOnly(['name', 'message', 'createdAt', 'ownerId'])
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.name is string
@@ -24,18 +41,18 @@ service cloud.firestore {
         && request.resource.data.message.size() <= 300
         && request.resource.data.createdAt is number;
 
-      allow delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
 
       // Messages are never edited in place — delete and write a new one.
       allow update: if false;
     }
 
     match /rsvp/{responseId} {
-      // Attendance answers include names and phone numbers, so nothing on the
-      // public site may read them back.
-      allow read: if false;
+      // Responses carry names and phone numbers, so only an admin may read
+      // them back. The invitation itself never reads this collection.
+      allow read: if isAdmin();
 
-      allow create: if request.auth != null
+      allow create: if isSignedIn()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
@@ -45,7 +62,15 @@ service cloud.firestore {
         && request.resource.data.headcount >= 0
         && request.resource.data.headcount <= 10;
 
-      allow update, delete: if false;
+      allow delete: if isAdmin();
+      allow update: if false;
+    }
+
+    // The allowlist itself is console-only. Nothing on the web may read it —
+    // which also means nobody can enumerate who the admins are — and nothing
+    // may write it, so an admin cannot promote anyone.
+    match /admins/{uid} {
+      allow read, write: if false;
     }
   }
 }
