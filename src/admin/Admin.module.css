@@ -623,8 +623,24 @@
   border-radius: var(--radius-sm);
 }
 
+/*
+ * A hidden section still has to be countable.
+ *
+ * Fading the whole row was doing that with `opacity`, which took the hairline
+ * border down with it — on this near-white background the row's edges
+ * disappeared, and two hidden sections in a row read as one. So the frame stays
+ * at full strength and says "off" in its own right: no tint, a dashed edge.
+ * Only the text inside is dimmed.
+ */
 .orderRow[data-hidden='true'] {
-  opacity: 0.55;
+  background: var(--bg);
+  border-style: dashed;
+  border-color: var(--ink-subtle);
+}
+
+.orderRow[data-hidden='true'] .orderNumber,
+.orderRow[data-hidden='true'] .orderLabel {
+  color: var(--ink-subtle);
 }
 
 .orderNumber {
