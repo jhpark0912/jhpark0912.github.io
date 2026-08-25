@@ -40,14 +40,15 @@
 }
 
 /*
- * One grid shared by both host lines. The parents are treated as a single
- * bundle rather than two aligned names: the bundle ends on a shared edge, the
- * "의 아들" / "의 딸" phrases share a column, and the two names start on a
- * shared edge.
+ * One grid shared by both host lines, in three columns: the parents, the
+ * "의 아들" / "의 딸" phrase, and the host's own name. Each column centres its
+ * own contents, so the groom's and the bride's three parts sit centred over
+ * each other however much the chrysanthemum or a longer phrase widens one of
+ * them.
  *
- * The chrysanthemum therefore shifts the marked line's own separator and
- * father's name a little to the left, which reads better than reserving an
- * empty slot of the flower's width in front of every unmarked name.
+ * The parents are one bundle rather than two separately aligned names — giving
+ * each parent its own column would mean reserving an empty slot of the
+ * flower's width in front of every unmarked name, which leaves a visible hole.
  */
 .hosts {
   display: grid;
@@ -71,15 +72,15 @@
   display: inline-flex;
   align-items: baseline;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  justify-self: end;
+  justify-content: center;
+  justify-self: center;
   gap: 6px;
   font-size: var(--text-base);
   color: var(--ink);
 }
 
 .role {
-  justify-self: end;
+  justify-self: center;
   white-space: nowrap;
   font-size: var(--text-sm);
   color: var(--ink-subtle);
@@ -111,7 +112,7 @@
 }
 
 .child {
-  justify-self: start;
+  justify-self: center;
   white-space: nowrap;
   font-size: var(--text-base);
   font-weight: 600;
