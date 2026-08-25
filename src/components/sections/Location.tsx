@@ -18,6 +18,17 @@ function staticCoords(venue: Venue): Coordinates | null {
   return typeof lat === 'number' && typeof lng === 'number' ? { lat, lng } : null
 }
 
+/**
+ * A map app's logo next to its name. The button already says which app it is,
+ * so the image is decorative — and if the logo file hasn't been dropped in yet,
+ * it removes itself rather than leaving a broken-image box on the button.
+ */
+function NavIcon({ src }: { src: string }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) return null
+  return <img className={styles.navIcon} src={src} alt="" onError={() => setFailed(true)} />
+}
+
 export function Location() {
   const { venue } = useContent()
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -137,13 +148,16 @@ export function Location() {
 
       <Reveal delay={160} className={styles.navButtons}>
         <LinkButton variant="soft" size="sm" href={links.kakao} target="_blank" rel="noreferrer noopener">
+          <NavIcon src="/images/map-kakao.png" />
           카카오맵
         </LinkButton>
         <LinkButton variant="soft" size="sm" href={links.naver} target="_blank" rel="noreferrer noopener">
+          <NavIcon src="/images/map-naver.png" />
           네이버지도
         </LinkButton>
         {links.tmap && (
           <LinkButton variant="soft" size="sm" href={links.tmap}>
+            <NavIcon src="/images/map-tmap.svg" />
             T map
           </LinkButton>
         )}
