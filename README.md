@@ -4,10 +4,20 @@ React + Vite로 만든 모바일 청첩장입니다. GitHub Pages(`https://jhpar
 
 ```bash
 npm install
-npm run dev      # 개발 서버
+npm run dev      # 개발 서버 (http://localhost:5173)
 npm run build    # 타입 체크 + 프로덕션 빌드
-npm run preview  # 빌드 결과 미리보기
+npm run preview  # 빌드 결과 미리보기 (http://localhost:4173)
 ```
+
+같은 와이파이의 휴대폰에서 열어보려면 `npm run dev -- --host`로 띄운 뒤, 터미널에 찍히는 `Network:` 주소를 폰 브라우저에 입력하세요.
+
+한 개의 HTML 파일로 묶어 어디서든 열어보려면:
+
+```bash
+npm run build && node scripts/build-preview.mjs
+```
+
+`preview.html` 하나에 스타일·스크립트·이미지가 모두 인라인되어 나옵니다. 외부 요청이 없으므로 파일을 그대로 열거나 아무 데나 올려도 동작합니다. 다만 Pretendard는 CDN에서 받아오므로 이 파일에서는 시스템 기본 한글 폰트로 대체됩니다.
 
 ## 구성
 
