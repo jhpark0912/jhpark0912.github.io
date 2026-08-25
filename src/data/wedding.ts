@@ -20,12 +20,9 @@ export interface Host {
   /** Leave empty when a parent should not appear on the invitation. */
   father: string
   mother: string
-  /** Optional — a parent row appears in the contact sheet only when set. */
-  fatherPhone?: string
-  motherPhone?: string
   /**
-   * Marks a parent who has passed away. The invitation then prefixes their
-   * name with the customary 故 and a white chrysanthemum.
+   * Marks a parent who has passed away. The invitation then draws a white
+   * chrysanthemum beside their name.
    */
   fatherDeceased?: boolean
   motherDeceased?: boolean

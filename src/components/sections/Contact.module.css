@@ -1,7 +1,9 @@
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+.card {
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  box-shadow: var(--shadow-sm);
 }
 
 .rows {
@@ -14,36 +16,31 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: 12px 0;
+  padding: 18px 0;
   border-bottom: 1px solid var(--line);
 }
 
 .row:last-child {
   border-bottom: none;
-  padding-bottom: 0;
-}
-
-.row:first-child {
-  padding-top: 0;
 }
 
 .who {
   display: flex;
   align-items: baseline;
-  gap: var(--space-3);
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .role {
   flex-shrink: 0;
-  width: 42px;
   font-size: var(--text-xs);
   color: var(--ink-subtle);
 }
 
 .name {
-  font-size: var(--text-base);
+  font-size: var(--text-lg);
   font-weight: 500;
+  letter-spacing: -0.01em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -58,8 +55,8 @@
 .iconButton {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-full);
   background: var(--lemon-100);
   color: var(--lemon-700);

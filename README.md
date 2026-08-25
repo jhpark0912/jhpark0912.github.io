@@ -44,14 +44,15 @@ npm run build && node scripts/build-preview.mjs
 | 항목 | `wedding.ts` 위치 | 비어 있을 때 |
 | --- | --- | --- |
 | 계좌번호 | `accounts.groom` / `accounts.bride` | **마음 전하실 곳 섹션 전체가 숨겨짐** |
-| 혼주 연락처 | `fatherPhone` / `motherPhone` | 해당 줄만 빠지고 신랑·신부 번호는 정상 표시 |
 | 웨딩 사진 | `cover`, `gallery` | 플레이스홀더 이미지 표시 |
 | 공유 썸네일 | `public/images/share.jpg` | 카카오톡 공유 카드의 이미지가 빈 채로 나감 |
 | 예식장 대표번호 | `venue.tel` | 예식장 전화 링크만 숨겨짐 — **의도적으로 비워 둔 항목** |
 
 형제 서열(`order`)은 전달받지 못해 각각 `아들` / `딸`로 두었습니다. `장남` / `차녀` 등으로 바꾸면 그대로 반영됩니다.
 
-고인이 되신 분은 `motherDeceased` / `fatherDeceased`를 `true`로 두면 이름 앞에 흰 국화와 `故`가 붙습니다. 현재 신부 어머니(김기자)에 적용되어 있습니다.
+고인이 되신 분은 `motherDeceased` / `fatherDeceased`를 `true`로 두면 이름 앞에 흰 국화가 붙습니다. 현재 신부 어머니(김기자)에 적용되어 있습니다.
+
+연락하기 섹션은 신랑·신부 두 사람만 표시합니다. 번호가 비어 있는 사람은 목록에서 빠지고, 둘 다 비면 섹션 전체가 숨겨집니다.
 
 예식장 좌표(`venue.lat` / `venue.lng`)는 `null`로 두면 카카오 지오코더가 `venue.address`를 실행 시점에 좌표로 변환합니다. 특정 위치를 직접 지정하고 싶을 때만 숫자를 넣으세요.
 

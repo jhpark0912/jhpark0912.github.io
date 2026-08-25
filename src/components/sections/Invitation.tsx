@@ -78,12 +78,7 @@ function HostLine({ host }: { host: Host }) {
                   </span>
                 )}
                 <span className={parent.deceased ? styles.deceasedName : undefined}>
-                  {parent.deceased && (
-                    <>
-                      <Chrysanthemum />
-                      <span className={styles.memorialMark}>故</span>
-                    </>
-                  )}
+                  {parent.deceased && <Chrysanthemum />}
                   {parent.name}
                 </span>
               </Fragment>
