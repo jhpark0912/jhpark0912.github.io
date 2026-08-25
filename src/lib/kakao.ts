@@ -127,6 +127,35 @@ export function geocodeAddress(maps: any, address: string): Promise<Coordinates 
  * when the app is missing. T map has no such web route, so it uses the custom
  * scheme and silently does nothing when the app is not installed — and it needs
  * coordinates, so it is omitted until they are known.
+ *
+ * KNOWN ISSUE — the T map link does not open on Android. Confirmed by hand on
+ * an Android phone; the scheme string itself is correct, so this is not a typo
+ * to fix in place. Three things need doing together:
+ *
+ *  1. Android Chrome refuses to follow a custom scheme from an <a href>. It
+ *     needs Chrome's intent syntax instead, which also carries the store link
+ *     to fall back to when T map is not installed:
+ *
+ *       intent://route?goalname=…&goalx=…&goaly=…#Intent;
+ *         scheme=tmap;package=com.skt.tmap.ku;
+ *         S.browser_fallback_url=<url-encoded Play Store link>;end
+ *
+ *     iOS must keep the plain `tmap://` form — Safari does not understand
+ *     intent URLs — so this function has to branch on the user agent, which
+ *     means it can no longer return one string per app.
+ *
+ *  2. `goalname/goalx/goaly` is the right parameter set and should stay. The
+ *     `rGoName/rGoX/rGoY` variant seen in many samples opens T map on Android
+ *     with no destination at all, in plain driving mode.
+ *
+ *  3. Most guests arrive through the KakaoTalk in-app browser, which handles
+ *     intent URLs differently again. Whatever we do here has to be tried there
+ *     before the invitation goes out, not just in Chrome.
+ *
+ * Separately: the venue has no hand-entered lat/lng, so this returns a null
+ * `tmap` until the Kakao geocoder answers — the button is missing entirely
+ * whenever the map fails to load. Filling in the coordinates in `wedding.ts`
+ * would make the button independent of that.
  */
 export function navigationLinks(name: string, address: string, coords: Coordinates | null) {
   const encodedName = encodeURIComponent(name)
