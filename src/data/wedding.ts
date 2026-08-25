@@ -1,8 +1,11 @@
 /**
- * Every piece of copy, contact detail and image path lives here.
+ * The invitation's default content.
  *
- * Replacing the values below is the only edit needed to keep the invitation up
- * to date — no component reads hard-coded wedding data.
+ * This file is the *fallback*, not the source of truth. At runtime the site
+ * reads `site/published` from Firestore and merges it over these values, so the
+ * admin page at /admin.html can change any of them without a redeploy. What is
+ * written here is what a visitor sees before that document arrives — and what
+ * they keep seeing if Firebase is not configured at all.
  *
  * Fields left empty hide their part of the page rather than showing a blank:
  * a host with no phone drops out of the contact sheet, an empty account list
@@ -38,6 +41,12 @@ export interface BankAccount {
 }
 
 export interface GalleryPhoto {
+  /**
+   * Set when the photo was uploaded from the admin page; the bytes then live in
+   * `photos/{photoId}` and `src` is filled in once that document is read.
+   * Empty for a file bundled under `public/images/`.
+   */
+  photoId?: string
   src: string
   alt: string
   /** Intrinsic ratio, used to reserve space so the carousel never jumps. */
@@ -45,22 +54,82 @@ export interface GalleryPhoto {
   height: number
 }
 
+export interface CoverPhoto {
+  photoId?: string
+  image: string
+  alt: string
+}
+
 export interface TransportGuide {
   title: string
   lines: string[]
 }
 
-export const wedding = {
+export interface WeddingMeta {
+  /** Absolute URL of the published invitation, used for sharing. */
+  url: string
+  title: string
+  description: string
+  /** Card thumbnail for KakaoTalk / OpenGraph. Must be an absolute URL. */
+  shareImage: string
+}
+
+export interface Venue {
+  name: string
+  hall: string
+  address: string
+  addressDetail: string
+  /** Empty hides the venue phone link. */
+  tel: string
+  /**
+   * Optional. When null the map marker and the navigation links are resolved
+   * from `address` through the Kakao geocoder at runtime, which is both more
+   * accurate and impossible to leave stale.
+   */
+  lat: number | null
+  lng: number | null
+  transport: TransportGuide[]
+}
+
+export interface WeddingContent {
+  meta: WeddingMeta
+  /** Ceremony start time. Always written with the +09:00 offset. */
+  date: string
+  groom: Host
+  bride: Host
+  greeting: {
+    poem: string[]
+    message: string[]
+  }
+  venue: Venue
+  gallery: GalleryPhoto[]
+  cover: CoverPhoto
+  /** Empty lists hide the gift section entirely — no half-filled accounts. */
+  accounts: {
+    groom: BankAccount[]
+    bride: BankAccount[]
+  }
+  rsvp: {
+    /** Shown above the form; set to '' to hide the note. */
+    note: string
+    /** Guests can still answer until this moment. */
+    deadline: string
+  }
+  guestbook: {
+    note: string
+    /** Cards shown per page in the guestbook list. */
+    pageSize: number
+  }
+}
+
+export const wedding: WeddingContent = {
   meta: {
-    /** Absolute URL of the published invitation, used for sharing. */
     url: 'https://jhpark0912.github.io/',
     title: '재현 ♥ 현정 결혼합니다',
     description: '2026년 12월 12일 토요일 오후 4시 40분, DMC타워 웨딩 2층 그랜드볼룸',
-    /** Card thumbnail for KakaoTalk / OpenGraph. Must be an absolute URL. */
     shareImage: 'https://jhpark0912.github.io/images/share.jpg',
   },
 
-  /** Ceremony start time. Always written with the +09:00 offset. */
   date: '2026-12-12T16:40:00+09:00',
 
   groom: {
@@ -73,7 +142,7 @@ export const wedding = {
     // Sibling order was not supplied; '아들' reads correctly on its own and can
     // be swapped for '장남' / '차남' at any time.
     order: '아들',
-  } satisfies Host,
+  },
 
   bride: {
     name: '김현정',
@@ -84,7 +153,7 @@ export const wedding = {
     mother: '김기자',
     motherDeceased: true,
     order: '딸',
-  } satisfies Host,
+  },
 
   greeting: {
     poem: ['서로가 마주 보며 다져온 사랑을', '이제 함께 한 곳을 바라보며', '걸어갈 수 있는 큰 사랑으로 키우고자 합니다.'],
@@ -100,18 +169,9 @@ export const wedding = {
     hall: '2층 그랜드볼룸',
     address: '서울특별시 마포구 성암로 189',
     addressDetail: '중소기업 DMC타워 2층',
-    /**
-     * Empty until the hall's number is confirmed; the link hides meanwhile.
-     * Annotated so `as const` does not narrow it to the empty-string literal.
-     */
-    tel: '' as string,
-    /**
-     * Optional. When null the map marker and the navigation links are resolved
-     * from `address` through the Kakao geocoder at runtime, which is both more
-     * accurate and impossible to leave stale.
-     */
-    lat: null as number | null,
-    lng: null as number | null,
+    tel: '',
+    lat: null,
+    lng: null,
     transport: [
       {
         title: '지하철',
@@ -124,7 +184,7 @@ export const wedding = {
         title: '주차',
         lines: ['건물 주차장에 500대 동시 주차가 가능합니다.', '예식 당일 주차 요금은 안내 데스크에서 확인해 주세요.'],
       },
-    ] satisfies TransportGuide[],
+    ],
   },
 
   gallery: [
@@ -134,31 +194,27 @@ export const wedding = {
     { src: '/images/gallery-04.svg', alt: '웨딩 사진 4', width: 1000, height: 1250 },
     { src: '/images/gallery-05.svg', alt: '웨딩 사진 5', width: 1000, height: 1250 },
     { src: '/images/gallery-06.svg', alt: '웨딩 사진 6', width: 1000, height: 1250 },
-  ] satisfies GalleryPhoto[],
+  ],
 
   cover: {
     image: '/images/cover.svg',
     alt: '신랑 신부의 웨딩 사진',
   },
 
-  /** Empty lists hide the gift section entirely — no half-filled accounts. */
   accounts: {
-    groom: [] as BankAccount[],
-    bride: [] as BankAccount[],
+    groom: [],
+    bride: [],
   },
 
   rsvp: {
-    /** Shown above the form; set to '' to hide the note. */
     note: '축하의 마음으로 참석해 주시는 모든 분들을 정성껏 모시고자 합니다. 참석 여부를 알려주시면 준비에 큰 도움이 됩니다.',
-    /** Guests can still answer until this moment. */
     deadline: '2026-11-30T23:59:59+09:00',
   },
 
   guestbook: {
     note: '따뜻한 축하의 말씀을 남겨주세요.',
-    /** Cards shown per page in the guestbook list. */
     pageSize: 5,
   },
-} as const
+}
 
-export type Wedding = typeof wedding
+export type Wedding = WeddingContent
