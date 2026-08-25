@@ -29,6 +29,9 @@
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
+    <!-- The published configuration is fetched before the first paint, so the
+         connection to Firestore is worth opening while the bundle downloads. -->
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
