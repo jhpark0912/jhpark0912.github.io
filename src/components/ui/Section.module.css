@@ -7,23 +7,20 @@
   background: var(--lemon-50);
 }
 
-/* Hairline seams instead of hard edges between neighbouring sections. */
-.tinted::before,
-.tinted::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--line);
-}
-
-.tinted::before {
-  top: 0;
-}
-
-.tinted::after {
-  bottom: 0;
+/*
+ * A hairline at every seam between neighbouring sections.
+ *
+ * The tint used to carry this on its own, which held only while tinted and
+ * plain sections alternated. They need not: the admin page reorders and hides
+ * sections, and even the default order puts 예식 일정 and 우리의 순간 — both
+ * plain — next to each other. Bordering every section but the first draws
+ * exactly one line at each boundary however the sections end up arranged.
+ *
+ * The first section is left alone deliberately; its neighbour above is the
+ * full-bleed cover photo, which needs no seam.
+ */
+.section + .section {
+  border-top: 1px solid var(--line);
 }
 
 .header {

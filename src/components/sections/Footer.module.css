@@ -1,6 +1,11 @@
+/*
+ * The seam above the footer used to come from the last section's tint, so it
+ * vanished whenever a plain section ended up last. The footer draws its own.
+ */
 .footer {
   padding: var(--space-8) var(--page-padding) calc(var(--space-8) + env(safe-area-inset-bottom));
   text-align: center;
+  border-top: 1px solid var(--line);
   background: linear-gradient(to bottom, var(--bg), var(--lemon-100));
 }
 
