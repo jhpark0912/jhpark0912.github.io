@@ -98,11 +98,17 @@
   color: var(--ink-subtle);
 }
 
-/* The chrysanthemum and the name it belongs to stay on one line together. */
+/*
+ * The chrysanthemum and the name it belongs to stay on one line together.
+ *
+ * No gap: the glyph carries its own margin inside the viewBox, so an added one
+ * reads as a space between the flower and the name rather than as the pair
+ * belonging together.
+ */
 .deceasedName {
   display: inline-flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 0;
   white-space: nowrap;
 }
 

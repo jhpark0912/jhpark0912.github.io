@@ -10,7 +10,7 @@ import styles from './Invitation.module.css'
  * deceased parent's name. Petals are generated rather than hand-authored as
  * path data so the ring stays even.
  */
-function Chrysanthemum({ size = 15 }: { size?: number }) {
+function Chrysanthemum({ size = 12 }: { size?: number }) {
   const outer = Array.from({ length: 12 }, (_, index) => index * 30)
   const inner = Array.from({ length: 8 }, (_, index) => index * 45 + 22)
 
