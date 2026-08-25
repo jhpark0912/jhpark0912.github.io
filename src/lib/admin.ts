@@ -8,7 +8,7 @@
  * their own sees nothing and can delete nothing.
  */
 
-import { loadFirebase } from './firebase'
+import { describeError, loadFirebase } from './firebase'
 import { GUESTBOOK_LIMIT, type GuestbookEntry, type MealChoice, type RsvpSide } from './store'
 
 export interface RsvpEntry {
@@ -73,15 +73,19 @@ export async function signOut(): Promise<void> {
 
 /**
  * Confirms the signed-in account is actually an admin by doing something only
- * an admin may do — reading the RSVP collection. A permission error means the
- * account exists but is not on the allowlist.
+ * an admin may do — reading the RSVP collection.
+ *
+ * Only a permission error means "not on the allowlist". Anything else (rules
+ * never published, network down) is rethrown as-is: reporting those as a
+ * missing admin entry would send someone looking in the wrong place.
  */
 export async function verifyAdmin(): Promise<void> {
   const { db, sdk } = await requireDb()
   try {
     await sdk.getDocs(sdk.query(sdk.collection(db, 'rsvp'), sdk.limit(1)))
-  } catch {
-    throw new NotAnAdminError()
+  } catch (error) {
+    if (describeError(error) === 'permission-denied') throw new NotAnAdminError()
+    throw error
   }
 }
 

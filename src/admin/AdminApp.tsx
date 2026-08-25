@@ -26,7 +26,14 @@ const LOAD_TIMEOUT_MS = 15_000
 
 const MEAL_LABEL: Record<string, string> = { yes: '식사', no: '식사 안 함', undecided: '미정' }
 
-function LoginForm({ onDone }: { onDone: () => void }) {
+/**
+ * Signs in and nothing more.
+ *
+ * Whether the account is an admin is checked by AdminApp, not here: a
+ * successful sign-in unmounts this form immediately, so any message set after
+ * that point would vanish with it.
+ */
+function LoginForm({ notice }: { notice: string }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -40,15 +47,10 @@ function LoginForm({ onDone }: { onDone: () => void }) {
     setError('')
     try {
       await signIn(email.trim(), password)
-      await verifyAdmin()
-      onDone()
-    } catch (caught) {
-      if (caught instanceof NotAnAdminError) {
-        setError('로그인은 되었지만 관리자 권한이 없는 계정입니다.')
-        await signOut()
-      } else {
-        setError('이메일 또는 비밀번호가 올바르지 않습니다.')
-      }
+      // On success this component is about to unmount; leave `busy` set so the
+      // button cannot be pressed twice in the meantime.
+    } catch {
+      setError('이메일 또는 비밀번호가 올바르지 않습니다.')
       setBusy(false)
     }
   }
@@ -57,6 +59,12 @@ function LoginForm({ onDone }: { onDone: () => void }) {
     <form className={styles.login} onSubmit={onSubmit}>
       <h1 className={styles.loginTitle}>관리자 로그인</h1>
       <p className={styles.loginNote}>청첩장 방명록과 참석 여부를 관리합니다.</p>
+
+      {notice && (
+        <div className={styles.notice} role="alert">
+          {notice}
+        </div>
+      )}
 
       <label className={styles.field}>
         <span>이메일</span>
@@ -275,6 +283,8 @@ function RsvpPanel() {
 export default function AdminApp() {
   const [session, setSession] = useState<AdminSession | null>(null)
   const [checking, setChecking] = useState(true)
+  const [access, setAccess] = useState<'unknown' | 'granted'>('unknown')
+  const [notice, setNotice] = useState('')
   const [tab, setTab] = useState<'guestbook' | 'rsvp'>('guestbook')
 
   useEffect(() => {
@@ -285,8 +295,41 @@ export default function AdminApp() {
     return watchSession((next) => {
       setSession(next)
       setChecking(false)
+      if (!next) setAccess('unknown')
     })
   }, [])
+
+  /*
+   * Signing in proves who someone is; it does not make them an admin. The
+   * check lives here rather than in the login form because a rejected account
+   * gets signed out again, and the explanation has to outlive that.
+   */
+  useEffect(() => {
+    if (!session || access === 'granted') return
+
+    let cancelled = false
+    void (async () => {
+      try {
+        await verifyAdmin()
+        if (!cancelled) {
+          setAccess('granted')
+          setNotice('')
+        }
+      } catch (error) {
+        if (cancelled) return
+        setNotice(
+          error instanceof NotAnAdminError
+            ? `이 계정에는 관리자 권한이 없습니다. Firestore의 admins 컬렉션에 문서 ID를 "${session.uid}" 로 하는 문서를 추가한 뒤 다시 로그인해 주세요.`
+            : `권한을 확인하지 못했습니다 (${describeError(error)}). 보안 규칙이 게시되어 있는지 확인해 주세요.`,
+        )
+        await signOut()
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [session, access])
 
   if (!isFirebaseConfigured) {
     return (
@@ -312,7 +355,15 @@ export default function AdminApp() {
   if (!session) {
     return (
       <main className={styles.shell}>
-        <LoginForm onDone={() => undefined} />
+        <LoginForm notice={notice} />
+      </main>
+    )
+  }
+
+  if (access !== 'granted') {
+    return (
+      <main className={styles.shell}>
+        <p className={styles.state}>권한 확인 중…</p>
       </main>
     )
   }
