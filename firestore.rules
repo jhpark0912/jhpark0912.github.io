@@ -1,12 +1,10 @@
 rules_version = '2';
 
 // Publish from the Firebase console: Firestore Database -> Rules -> Publish.
-// Note this is the FIRESTORE rules editor, not Realtime Database, whose rules
-// are JSON and will reject this file on line 1.
 //
-// Kept to plain ASCII on purpose: the rules lexer has been seen to fail on
-// non-ASCII characters even inside comments, and it reports those failures at
-// line 1, which makes them very hard to place.
+// This belongs in the FIRESTORE rules editor. Realtime Database is a separate
+// product whose rules are JSON; pasting this file there fails with
+// "Line 1: Parse error" because it expects an opening brace.
 //
 // Two kinds of writer:
 //
