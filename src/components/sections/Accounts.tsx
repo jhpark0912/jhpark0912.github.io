@@ -45,7 +45,7 @@ export function Accounts() {
   return (
     <Section id="accounts" eyebrow="Gift" title="마음 전하실 곳">
       <Reveal className={styles.note}>
-        <p>참석이 어려우신 분들을 위해 계좌번호를 안내드립니다. 축하해 주시는 마음만으로도 감사합니다.</p>
+        <p>참석하기 어려운 분들을 위해 조심스럽게 계좌번호를 안내해 드립니다. 너그러운 마음으로 양해 부탁드립니다.</p>
       </Reveal>
 
       <div className={styles.list}>
