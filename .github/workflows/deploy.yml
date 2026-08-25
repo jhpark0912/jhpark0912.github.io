@@ -28,6 +28,37 @@ jobs:
 
       - run: npm ci
 
+      # Reports which keys actually reached the runner. A secret whose name is
+      # misspelled arrives as an empty string and the site silently falls back
+      # to local-only storage, which is otherwise indistinguishable from the
+      # real thing until a guest opens the invitation on a second device.
+      # Only presence and length are printed — never a value.
+      - name: 주입된 키 확인
+        env:
+          VITE_KAKAO_JS_KEY: ${{ secrets.VITE_KAKAO_JS_KEY }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+        run: |
+          missing=0
+          for key in VITE_KAKAO_JS_KEY VITE_FIREBASE_API_KEY VITE_FIREBASE_AUTH_DOMAIN \
+                     VITE_FIREBASE_PROJECT_ID VITE_FIREBASE_STORAGE_BUCKET \
+                     VITE_FIREBASE_MESSAGING_SENDER_ID VITE_FIREBASE_APP_ID; do
+            value="${!key}"
+            if [ -n "$value" ]; then
+              echo "$key — 설정됨 (${#value}자)"
+            else
+              echo "$key — 없음"
+              missing=$((missing + 1))
+            fi
+          done
+          if [ "$missing" -gt 0 ]; then
+            echo "::warning::$missing 개의 키가 비어 있습니다. 해당 기능은 꺼진 채로 배포됩니다."
+          fi
+
       - run: npm run build
         env:
           # Absent secrets simply build the site without the map, the Kakao
@@ -39,6 +70,20 @@ jobs:
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+
+      # End-to-end proof that the config survived the build and is in the file
+      # guests will actually download. Matches on the shape of the values, not
+      # the values themselves, so nothing secret is revealed.
+      - name: 빌드 결과 확인
+        run: |
+          if grep -rqs 'firebaseapp\.com\|firebasestorage\.app' dist/assets/*.js; then
+            echo "Firebase 설정이 번들에 포함되었습니다 — 방명록과 참석 여부가 서버에 저장됩니다."
+          else
+            echo "::warning::번들에 Firebase 설정이 없습니다 — 방명록이 기기 로컬에만 저장됩니다."
+          fi
+          if grep -rqs 'dapi\.kakao\.com' dist/assets/*.js; then
+            echo "카카오 SDK 로더가 포함되었습니다."
+          fi
 
       - uses: actions/configure-pages@v6
 
