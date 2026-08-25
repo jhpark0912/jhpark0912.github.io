@@ -60,13 +60,14 @@ function parentsOf(host: Host): ParentName[] {
 }
 
 /**
- * Renders "아버지 · 어머니 의 아들 이름", degrading to just the role and the
+ * Renders "박병용 · 지숙환의 아들  박재현", degrading to just the role and the
  * name while the parents' details are still unknown.
  *
- * The three parts are always emitted as three cells so the groom's and the
- * bride's lines share the grid columns declared on `.hosts` — the names then
- * line up under each other even though "아들"/"딸" and the chrysanthemum make
- * the lines different widths.
+ * Two cells, not three: the parents and the "의 아들" / "의 딸" phrase belong to
+ * the same run, so the phrase hangs off the mother's name the way it does in
+ * print. Splitting it into its own column would space it away from the name it
+ * attaches to. The host's own name stays a separate cell so the two lines'
+ * names align, which is the one alignment a printed invitation does keep.
  */
 function HostLine({ host }: { host: Host }) {
   const parents = parentsOf(host)
@@ -74,9 +75,10 @@ function HostLine({ host }: { host: Host }) {
 
   return (
     <p className={styles.hostLine}>
-      <span className={hasParents ? styles.parents : styles.role}>
-        {hasParents
-          ? parents.map((parent, index) => (
+      <span className={hasParents ? styles.lineup : styles.role}>
+        {hasParents ? (
+          <>
+            {parents.map((parent, index) => (
               <Fragment key={parent.name}>
                 {index > 0 && (
                   <span className={styles.separator} aria-hidden="true">
@@ -88,10 +90,13 @@ function HostLine({ host }: { host: Host }) {
                   {parent.name}
                 </span>
               </Fragment>
-            ))
-          : host.label}
+            ))}
+            {host.order && <span className={styles.relation}>의 {host.order}</span>}
+          </>
+        ) : (
+          host.label
+        )}
       </span>
-      <span className={styles.relation}>{hasParents && host.order ? `의 ${host.order}` : ''}</span>
       <span className={styles.child}>{host.name}</span>
     </p>
   )

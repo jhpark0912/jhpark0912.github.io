@@ -40,11 +40,14 @@
 }
 
 /*
- * One grid shared by both host lines, in three columns: the parents, the
- * "의 아들" / "의 딸" phrase, and the host's own name. Each column centres its
- * own contents, so the groom's and the bride's three parts sit centred over
- * each other however much the chrysanthemum or a longer phrase widens one of
- * them.
+ * One grid shared by both host lines, in two columns: the parents together
+ * with the "의 아들" / "의 딸" phrase, and the host's own name.
+ *
+ * Both columns start at their left edge instead of centring. That is what puts
+ * the two fathers' names at the same x and the two hosts' names at the same x —
+ * the arrangement a printed invitation uses — while the chrysanthemum and the
+ * differing phrase lengths are absorbed at the right end of the first column
+ * rather than pushing either line off centre.
  *
  * The parents are one bundle rather than two separately aligned names — giving
  * each parent its own column would mean reserving an empty slot of the
@@ -52,41 +55,46 @@
  */
 .hosts {
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto auto;
   justify-content: center;
   align-items: baseline;
-  column-gap: 6px;
+  column-gap: var(--space-3);
   row-gap: var(--space-2);
   padding-top: var(--space-5);
   border-top: 1px solid var(--line);
   width: 100%;
 }
 
-/* The paragraph keeps the semantics; its three spans are the grid cells. */
+/* The paragraph keeps the semantics; its two spans are the grid cells. */
 .hostLine {
   display: contents;
   font-size: var(--text-base);
 }
 
-.parents {
+/*
+ * No `gap`: the phrase has to touch the name before it so "지숙환" and "의 아들"
+ * read as "지숙환의 아들". The one space that belongs in the line is the
+ * separator's own margin.
+ */
+.lineup {
   display: inline-flex;
   align-items: baseline;
   flex-wrap: wrap;
-  justify-content: center;
-  justify-self: center;
-  gap: 6px;
+  justify-self: start;
+  row-gap: 4px;
   font-size: var(--text-base);
   color: var(--ink);
 }
 
 .role {
-  justify-self: center;
+  justify-self: start;
   white-space: nowrap;
   font-size: var(--text-sm);
   color: var(--ink-subtle);
 }
 
 .separator {
+  margin: 0 6px;
   color: var(--ink-subtle);
 }
 
@@ -105,14 +113,13 @@
 }
 
 .relation {
-  justify-self: center;
   white-space: nowrap;
   font-size: var(--text-sm);
   color: var(--ink-subtle);
 }
 
 .child {
-  justify-self: center;
+  justify-self: start;
   white-space: nowrap;
   font-size: var(--text-base);
   font-weight: 600;
