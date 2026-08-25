@@ -23,6 +23,12 @@ export interface Host {
   /** Optional — a parent row appears in the contact sheet only when set. */
   fatherPhone?: string
   motherPhone?: string
+  /**
+   * Marks a parent who has passed away. The invitation then prefixes their
+   * name with the customary 故 and a white chrysanthemum.
+   */
+  fatherDeceased?: boolean
+  motherDeceased?: boolean
   /** Position among siblings, e.g. "장남" / "차녀". Empty hides the phrase. */
   order: string
 }
@@ -64,20 +70,23 @@ export const wedding = {
     name: '박재현',
     nameEn: 'Jaehyun',
     label: '신랑',
-    phone: '',
-    father: '',
-    mother: '',
-    order: '',
+    phone: '010-6238-7260',
+    father: '박병용',
+    mother: '지숙환',
+    // Sibling order was not supplied; '아들' reads correctly on its own and can
+    // be swapped for '장남' / '차남' at any time.
+    order: '아들',
   } satisfies Host,
 
   bride: {
     name: '김현정',
     nameEn: 'Hyunjung',
     label: '신부',
-    phone: '',
-    father: '',
-    mother: '',
-    order: '',
+    phone: '010-8809-9831',
+    father: '김규찬',
+    mother: '김기자',
+    motherDeceased: true,
+    order: '딸',
   } satisfies Host,
 
   greeting: {
@@ -145,7 +154,7 @@ export const wedding = {
     /** Shown above the form; set to '' to hide the note. */
     note: '축하의 마음으로 참석해 주시는 모든 분들을 정성껏 모시고자 합니다. 참석 여부를 알려주시면 준비에 큰 도움이 됩니다.',
     /** Guests can still answer until this moment. */
-    deadline: '2026-11-28T23:59:59+09:00',
+    deadline: '2026-11-30T23:59:59+09:00',
   },
 
   guestbook: {
