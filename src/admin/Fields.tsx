@@ -7,7 +7,7 @@
  * call site, where the meaning of the field is known.
  */
 
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import styles from './Admin.module.css'
 
 interface BaseProps {
@@ -96,23 +96,38 @@ interface LinesProps extends BaseProps {
  * how the poem and the greeting keep their shape on a narrow screen — so the
  * editor shows them as a textarea and splits on the newlines. Blank lines are
  * dropped on the way out; a stray empty line would render as a gap.
+ *
+ * The textarea keeps the text exactly as typed. Trimming what is being typed
+ * would swallow the space that starts a word and the newline that starts a
+ * line, so the tidying only happens to the array that leaves the field.
  */
 export function Lines({ label, hint, value, onChange, placeholder, rows = 4 }: LinesProps) {
+  const joined = value.join('\n')
+  const [draft, setDraft] = useState(joined)
+  const [emitted, setEmitted] = useState(joined)
+
+  // The value changed somewhere else — a draft finished loading, a reset. Take it.
+  if (joined !== emitted) {
+    setEmitted(joined)
+    setDraft(joined)
+  }
+
   return (
     <Area
       label={label}
       hint={hint ?? '줄바꿈한 대로 청첩장에 표시됩니다'}
-      value={value.join('\n')}
+      value={draft}
       rows={rows}
       placeholder={placeholder}
-      onChange={(next) =>
-        onChange(
-          next
-            .split('\n')
-            .map((line) => line.trim())
-            .filter((line) => line.length > 0),
-        )
-      }
+      onChange={(next) => {
+        const lines = next
+          .split('\n')
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0)
+        setDraft(next)
+        setEmitted(lines.join('\n'))
+        onChange(lines)
+      }}
     />
   )
 }
