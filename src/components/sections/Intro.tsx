@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { wedding } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { formatDotDate } from '../../lib/date'
 import { useLockBodyScroll } from '../../hooks/useLockBodyScroll'
 import styles from './Intro.module.css'
@@ -19,6 +19,7 @@ interface IntroProps {
  */
 export function Intro({ onDone }: IntroProps) {
   const [leaving, setLeaving] = useState(false)
+  const wedding = useContent()
   const date = new Date(wedding.date)
 
   useLockBodyScroll(true)

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { wedding } from '../../data/wedding'
+import type { Venue } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { geocodeAddress, hasKakaoKey, loadKakaoMaps, navigationLinks, type Coordinates } from '../../lib/kakao'
 import { copyText } from '../../lib/clipboard'
 import { Section } from '../ui/Section'
@@ -12,16 +13,16 @@ import styles from './Location.module.css'
 type MapState = 'idle' | 'loading' | 'ready' | 'error'
 
 /** Coordinates straight from the data, when they were filled in by hand. */
-function staticCoords(): Coordinates | null {
-  const { lat, lng } = wedding.venue
+function staticCoords(venue: Venue): Coordinates | null {
+  const { lat, lng } = venue
   return typeof lat === 'number' && typeof lng === 'number' ? { lat, lng } : null
 }
 
 export function Location() {
-  const { venue } = wedding
+  const { venue } = useContent()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [state, setState] = useState<MapState>(hasKakaoKey ? 'idle' : 'error')
-  const [coords, setCoords] = useState<Coordinates | null>(staticCoords)
+  const [coords, setCoords] = useState<Coordinates | null>(() => staticCoords(venue))
   const toast = useToast()
 
   const links = navigationLinks(venue.name, venue.address, coords)
@@ -43,7 +44,7 @@ export function Location() {
 
         // Prefer hand-entered coordinates; otherwise ask the geocoder, so the
         // marker follows the address rather than a number copied long ago.
-        const resolved = staticCoords() ?? (await geocodeAddress(maps, venue.address))
+        const resolved = staticCoords(venue) ?? (await geocodeAddress(maps, venue.address))
         if (cancelled) return
 
         if (!resolved) {
@@ -83,7 +84,10 @@ export function Location() {
       cancelled = true
       observer.disconnect()
     }
-  }, [venue.address])
+    // Only what the marker is placed from. Depending on `venue` itself would
+    // rebuild the map every time the configuration object is replaced — which
+    // happens once more as soon as the uploaded photos arrive.
+  }, [venue.address, venue.lat, venue.lng])
 
   const onCopyAddress = async () => {
     const copied = await copyText(fullAddress)

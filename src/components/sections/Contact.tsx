@@ -1,4 +1,5 @@
-import { wedding, type Host } from '../../data/wedding'
+import type { Host } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
 import styles from './Contact.module.css'
@@ -48,6 +49,7 @@ function ContactRow({ host }: { host: Host }) {
 
 /** Just the couple — two rows, no sides to expand, no hosts. */
 export function Contact() {
+  const wedding = useContent()
   const people = [wedding.groom, wedding.bride].filter((host) => host.phone.length > 0)
 
   if (people.length === 0) return null

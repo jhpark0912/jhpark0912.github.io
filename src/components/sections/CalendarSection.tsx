@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { wedding } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { buildMonthGrid, daysBetween, formatKoreanTime, formatWeekday, toKstYmd } from '../../lib/date'
 import { useCountdown } from '../../hooks/useCountdown'
 import { Section } from '../ui/Section'
@@ -9,7 +9,8 @@ import styles from './CalendarSection.module.css'
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 export function CalendarSection() {
-  const date = useMemo(() => new Date(wedding.date), [])
+  const wedding = useContent()
+  const date = useMemo(() => new Date(wedding.date), [wedding.date])
   const cells = useMemo(() => buildMonthGrid(date), [date])
   const { year, month, day } = toKstYmd(date)
   const remaining = useCountdown(date)

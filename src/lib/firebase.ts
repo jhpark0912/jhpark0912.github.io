@@ -52,6 +52,26 @@ export function describeError(error: unknown): string {
   return String(error)
 }
 
+/**
+ * Resolves once Firebase has finished restoring a persisted session.
+ *
+ * `auth.currentUser` is null for the first moments after the SDK loads, even
+ * when a session exists in storage, so anything that has to know *whether*
+ * someone is signed in — rather than react to it later — has to wait for the
+ * first state callback. Resolves with null when nobody is signed in.
+ */
+export function awaitAuthReady(): Promise<{ uid: string; isAnonymous: boolean } | null> {
+  return loadFirebase().then(
+    ({ auth, authSdk }) =>
+      new Promise((resolve) => {
+        const unsubscribe = authSdk.onAuthStateChanged(auth, (user: any) => {
+          unsubscribe()
+          resolve(user ? { uid: user.uid, isAnonymous: Boolean(user.isAnonymous) } : null)
+        })
+      }),
+  )
+}
+
 export interface FirebaseBundle {
   db: any
   auth: any

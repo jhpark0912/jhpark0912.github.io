@@ -16,7 +16,8 @@
  * instead of throwing somewhere deep inside a component.
  */
 
-import { isFirebaseConfigured, loadFirebase } from './firebase'
+import { awaitAuthReady, isFirebaseConfigured, loadFirebase } from './firebase'
+import { readPublicDoc } from './firestoreRest'
 import {
   wedding,
   type BankAccount,
@@ -270,9 +271,24 @@ async function requireDb() {
  * Resolves to null when the document has never been written, which is the
  * normal state of a fresh project — the caller then keeps the bundled
  * defaults rather than showing an error.
+ *
+ * The published document is world-readable, so it is fetched over REST: it is
+ * the one read that happens before a guest sees anything, and loading the
+ * Firebase SDK for it would delay the whole invitation. The draft needs a
+ * signed-in admin and therefore goes through the SDK.
  */
 export async function loadConfig(slot: ConfigSlot): Promise<SiteConfig | null> {
   if (!isFirebaseConfigured) return readLocalConfig(slot)
+
+  if (slot === 'published') {
+    const stored = await readPublicDoc('site/published')
+    return stored ? mergeConfig(stored) : null
+  }
+
+  // The preview opens the invitation in a fresh tab, where the admin's session
+  // is still being restored from storage; reading before it lands would be
+  // refused by the rules.
+  await awaitAuthReady()
 
   const { db, sdk } = await requireDb()
   const snapshot = await sdk.getDoc(sdk.doc(db, 'site', slot))

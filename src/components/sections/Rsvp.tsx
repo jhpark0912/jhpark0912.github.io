@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { wedding } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { store, type MealChoice, type RsvpSide } from '../../lib/store'
 import { formatKoreanDate } from '../../lib/date'
 import { Section } from '../ui/Section'
@@ -32,6 +32,7 @@ const initialState: FormState = {
 }
 
 export function Rsvp() {
+  const wedding = useContent()
   const [open, setOpen] = useState(false)
   const [state, setState] = useState<FormState>(initialState)
   const [error, setError] = useState('')

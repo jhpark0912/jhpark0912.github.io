@@ -1,4 +1,5 @@
-import { wedding, type BankAccount } from '../../data/wedding'
+import type { BankAccount } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { copyText } from '../../lib/clipboard'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
@@ -32,9 +33,10 @@ function AccountRow({ account }: { account: BankAccount }) {
 }
 
 export function Accounts() {
+  const { accounts } = useContent()
   const sides = [
-    { key: 'groom', title: '신랑 측', accounts: wedding.accounts.groom },
-    { key: 'bride', title: '신부 측', accounts: wedding.accounts.bride },
+    { key: 'groom', title: '신랑 측', accounts: accounts.groom },
+    { key: 'bride', title: '신부 측', accounts: accounts.bride },
   ].filter((side) => side.accounts.length > 0)
 
   // Nothing to show beats an empty "마음 전하실 곳" with no accounts in it.

@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
-import { wedding, type Host } from '../../data/wedding'
+import type { Host } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
 import styles from './Invitation.module.css'
@@ -95,7 +96,7 @@ function HostLine({ host }: { host: Host }) {
 }
 
 export function Invitation() {
-  const { groom, bride, greeting } = wedding
+  const { groom, bride, greeting } = useContent()
 
   return (
     <Section id="invitation" eyebrow="Invitation" title="초대합니다">

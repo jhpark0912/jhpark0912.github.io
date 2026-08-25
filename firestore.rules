@@ -69,6 +69,47 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // The invitation's own content: what it says, which photos it shows and in
+    // what order the sections run.
+    //
+    //   site/published  what guests see. Read by everyone, written by admins.
+    //   site/draft      what the admin page is editing. Admins only, both ways.
+    //
+    // Splitting them is what lets someone edit the invitation while guests are
+    // reading it: nothing they type is visible until they publish, which copies
+    // the draft over the published document.
+    match /site/{slot} {
+      allow read: if slot == 'published' || isAdmin();
+      allow write: if isAdmin() && (slot == 'published' || slot == 'draft');
+    }
+
+    // Uploaded photos, one document each, holding a JPEG data URL.
+    //
+    // There is no Storage bucket in this project, so the bytes live here. The
+    // size limit is the important rule: a Firestore document may not exceed
+    // 1 MiB, and the admin page shrinks every photo well below that before
+    // writing it. The check is repeated here because the browser doing the
+    // shrinking is not what enforces anything.
+    match /photos/{photoId} {
+      allow read: if true;
+
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['data', 'width', 'height', 'createdAt'])
+        && request.resource.data.data is string
+        && request.resource.data.data.size() > 0
+        && request.resource.data.data.size() <= 400000
+        && request.resource.data.width is int
+        && request.resource.data.height is int
+        && request.resource.data.createdAt is number;
+
+      allow delete: if isAdmin();
+
+      // A photo is written once. Replacing one means uploading a new document
+      // and pointing the gallery at it, which keeps the published invitation
+      // working until the moment it is republished.
+      allow update: if false;
+    }
+
     // The allowlist itself is console-only. Nothing on the web may read it -
     // which also means nobody can enumerate who the admins are - and nothing
     // may write it, so an admin cannot promote anyone.

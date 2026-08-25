@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { wedding } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { hasKakaoKey, loadKakaoShare } from '../../lib/kakao'
 import { copyText } from '../../lib/clipboard'
 import { Section } from '../ui/Section'
@@ -11,7 +11,7 @@ import styles from './ShareSection.module.css'
 export function ShareSection() {
   const [sharing, setSharing] = useState(false)
   const toast = useToast()
-  const { meta } = wedding
+  const { meta } = useContent()
   // Prefer the address the guest actually opened, so a preview deploy shares itself.
   const url = typeof window !== 'undefined' ? window.location.href : meta.url
 

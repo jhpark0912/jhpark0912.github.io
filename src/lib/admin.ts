@@ -8,8 +8,15 @@
  * their own sees nothing and can delete nothing.
  */
 
-import { describeError, loadFirebase } from './firebase'
-import { GUESTBOOK_LIMIT, type GuestbookEntry, type MealChoice, type RsvpSide } from './store'
+import { describeError, isFirebaseConfigured, loadFirebase } from './firebase'
+import {
+  GUESTBOOK_LIMIT,
+  listLocalRsvp,
+  store,
+  type GuestbookEntry,
+  type MealChoice,
+  type RsvpSide,
+} from './store'
 
 export interface RsvpEntry {
   id: string
@@ -90,6 +97,10 @@ export async function verifyAdmin(): Promise<void> {
 }
 
 export async function listGuestbook(): Promise<GuestbookEntry[]> {
+  // Without Firebase everything lives in this browser's storage, including
+  // what the admin page is looking at.
+  if (!isFirebaseConfigured) return store.listGuestbook()
+
   const { db, sdk } = await requireDb()
   const snapshot = await sdk.getDocs(
     sdk.query(sdk.collection(db, 'guestbook'), sdk.orderBy('createdAt', 'desc'), sdk.limit(GUESTBOOK_LIMIT)),
@@ -107,11 +118,17 @@ export async function listGuestbook(): Promise<GuestbookEntry[]> {
 }
 
 export async function deleteGuestbookEntry(id: string): Promise<void> {
+  if (!isFirebaseConfigured) return store.removeGuestbook(id)
+
   const { db, sdk } = await requireDb()
   await sdk.deleteDoc(sdk.doc(db, 'guestbook', id))
 }
 
 export async function listRsvp(): Promise<RsvpEntry[]> {
+  if (!isFirebaseConfigured) {
+    return [...listLocalRsvp()].sort((a, b) => b.createdAt - a.createdAt)
+  }
+
   const { db, sdk } = await requireDb()
   const snapshot = await sdk.getDocs(
     sdk.query(sdk.collection(db, 'rsvp'), sdk.orderBy('createdAt', 'desc'), sdk.limit(500)),

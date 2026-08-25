@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { wedding } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { formatKoreanDate, formatKoreanTime, formatWeekday } from '../../lib/date'
 import styles from './Cover.module.css'
 
@@ -10,6 +10,7 @@ interface CoverProps {
 
 export function Cover({ started }: CoverProps) {
   const mediaRef = useRef<HTMLDivElement | null>(null)
+  const wedding = useContent()
   const date = new Date(wedding.date)
 
   // Gentle parallax: the photo drifts at 30% of scroll speed while the cover is
@@ -42,13 +43,17 @@ export function Cover({ started }: CoverProps) {
   return (
     <section className={styles.cover} aria-label="청첩장 표지">
       <div ref={mediaRef} className={styles.media}>
-        <img
-          src={wedding.cover.image}
-          alt={wedding.cover.alt}
-          className={styles.image}
-          fetchPriority="high"
-          decoding="async"
-        />
+        {/* Empty while an uploaded cover is still on its way. The veil and the
+            page tint already fill the frame, so nothing looks broken. */}
+        {wedding.cover.image && (
+          <img
+            src={wedding.cover.image}
+            alt={wedding.cover.alt}
+            className={styles.image}
+            fetchPriority="high"
+            decoding="async"
+          />
+        )}
         <div className={styles.veil} aria-hidden="true" />
       </div>
 

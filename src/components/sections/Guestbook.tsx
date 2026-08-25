@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { wedding } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { MESSAGE_MAX, NAME_MAX, store, type GuestbookEntry } from '../../lib/store'
 import { describeError, withTimeout } from '../../lib/firebase'
 import { useInView } from '../../hooks/useInView'
@@ -37,7 +37,8 @@ export function Guestbook() {
   const [saving, setSaving] = useState(false)
 
   const toast = useToast()
-  const pageSize = wedding.guestbook.pageSize
+  const { guestbook } = useContent()
+  const pageSize = guestbook.pageSize
 
   const load = useCallback(async () => {
     setLoadState('loading')
@@ -127,7 +128,7 @@ export function Guestbook() {
     <Section id="guestbook" eyebrow="Guestbook" title="축하 메시지">
       <div ref={sectionRef}>
         <Reveal className={styles.intro}>
-          <p>{wedding.guestbook.note}</p>
+          <p>{guestbook.note}</p>
         </Reveal>
 
         {loadState === 'loading' && <p className={styles.state}>메시지를 불러오는 중입니다…</p>}

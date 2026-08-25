@@ -1,9 +1,10 @@
-import { wedding } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { formatDotDate } from '../../lib/date'
 import { Reveal } from '../ui/Reveal'
 import styles from './Footer.module.css'
 
 export function Footer() {
+  const wedding = useContent()
   const date = new Date(wedding.date)
 
   return (

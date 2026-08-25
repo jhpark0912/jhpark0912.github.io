@@ -80,6 +80,32 @@ export function formatKoreanTime(date: Date): string {
   return minute === 0 ? `${meridiem} ${hour12}시` : `${meridiem} ${hour12}시 ${minute}분`
 }
 
+/**
+ * Turns a stored timestamp into what a `datetime-local` input expects.
+ *
+ * The input has no time zone of its own — it shows whatever wall-clock string
+ * it is given — so the admin page hands it the Korean wall clock and reads it
+ * back the same way. Editing the ceremony time from a laptop in another country
+ * therefore still means the time in Seoul, which is the only reading that makes
+ * sense on a wedding invitation.
+ */
+export function toKstInputValue(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const { year, month, day } = toKstYmd(date)
+  const { hour, minute } = toKstHourMinute(date)
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}`
+}
+
+/** The inverse: a wall-clock string becomes an instant, stamped +09:00. */
+export function fromKstInputValue(value: string): string {
+  if (!value) return ''
+  // `datetime-local` may or may not include seconds depending on the browser.
+  const withSeconds = value.length === 16 ? `${value}:00` : value
+  return `${withSeconds}+09:00`
+}
+
 export interface CalendarCell {
   day: number | null
   /** Marks the ceremony day so the calendar can highlight it. */

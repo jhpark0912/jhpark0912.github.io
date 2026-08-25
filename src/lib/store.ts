@@ -12,7 +12,7 @@
  * from that device. See README for the matching rules.
  */
 
-import { isFirebaseConfigured, loadFirebase } from './firebase'
+import { awaitAuthReady, isFirebaseConfigured, loadFirebase } from './firebase'
 
 export interface GuestbookEntry {
   id: string
@@ -154,8 +154,16 @@ async function getContext(): Promise<FirebaseContext> {
   if (!contextPromise) {
     contextPromise = (async () => {
       const { db, auth, firestore, authSdk } = await loadFirebase()
-      // Returns the already-signed-in anonymous user when one exists, so the
-      // same uid — and therefore the same delete rights — persists per browser.
+
+      // An admin previewing their own invitation is already signed in with a
+      // real account. Signing in anonymously here would replace that session
+      // for the whole origin and log them out of the admin page in another
+      // tab, so an existing signed-in user is used as-is.
+      const existing = await awaitAuthReady()
+      if (existing) return { db, uid: existing.uid, sdk: firestore }
+
+      // Otherwise the guest gets an anonymous identity, which persists per
+      // browser and is what their delete rights are checked against.
       const credential = await authSdk.signInAnonymously(auth)
       return { db, uid: credential.user.uid, sdk: firestore }
     })().catch((error) => {
@@ -218,3 +226,13 @@ const firestoreStore: Store = {
 }
 
 export const store: Store = isFirebaseConfigured ? firestoreStore : localStore
+
+export interface LocalRsvp extends RsvpDraft {
+  id: string
+  createdAt: number
+}
+
+/** The mock's RSVP responses, so the admin page can list them without Firebase. */
+export function listLocalRsvp(): LocalRsvp[] {
+  return readLocal<LocalRsvp[]>(LOCAL_RSVP_KEY, [])
+}

@@ -1,13 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
-import { wedding } from '../../data/wedding'
+import type { GalleryPhoto } from '../../data/wedding'
+import { useContent } from '../../lib/useSiteConfig'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
 import { Lightbox } from './Lightbox'
 import styles from './Gallery.module.css'
 
+/** Uploaded photos share no filename, so the id leads and the path follows. */
+function photoKey(photo: GalleryPhoto): string {
+  return photo.photoId ?? photo.src
+}
+
 export function Gallery() {
-  const photos = wedding.gallery
+  // An uploaded photo has no `src` until its document arrives, and an <img>
+  // with an empty source is a broken image in every browser.
+  const photos = useContent().gallery.filter((photo) => photo.src.length > 0)
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center', containScroll: false })
   const [selected, setSelected] = useState(0)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
@@ -24,13 +32,16 @@ export function Gallery() {
 
   const scrollTo = useCallback((index: number) => emblaApi?.scrollTo(index), [emblaApi])
 
+  // An empty carousel counting "00 / 00" is worse than no section at all.
+  if (photos.length === 0) return null
+
   return (
     <Section id="gallery" eyebrow="Gallery" title="우리의 순간">
       <Reveal className={styles.viewportWrap}>
         <div className={styles.viewport} ref={emblaRef}>
           <div className={styles.container}>
             {photos.map((photo, index) => (
-              <div className={styles.slide} key={photo.src} data-active={index === selected}>
+              <div className={styles.slide} key={photoKey(photo)} data-active={index === selected}>
                 <button
                   type="button"
                   className={styles.slideButton}
@@ -57,7 +68,7 @@ export function Gallery() {
         <div className={styles.dots}>
           {photos.map((photo, index) => (
             <button
-              key={photo.src}
+              key={photoKey(photo)}
               type="button"
               className={styles.dot}
               data-active={index === selected}
