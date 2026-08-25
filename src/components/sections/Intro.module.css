@@ -13,81 +13,44 @@
   pointer-events: none;
 }
 
-.inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
+/*
+ * The greeting is written rather than faded in: --written is how far the hand
+ * has got, and the mask keeps everything past that point off the screen. The
+ * value is driven from Intro.tsx, one frame at a time.
+ *
+ * nowrap because the mask is a single left-to-right sweep — a second line would
+ * be revealed from the wrong end. The clamp keeps the line inside a 320px
+ * screen at its widest.
+ */
+.greeting {
+  --written: 100%;
+  max-width: 100%;
   padding: 0 var(--page-padding);
-  text-align: center;
-}
-
-.label,
-.names,
-.rule,
-.date {
-  opacity: 0;
-  animation: rise var(--duration-slow) var(--ease-out) forwards;
-}
-
-.label {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: var(--text-md);
-  letter-spacing: 0.16em;
-  color: var(--ink-muted);
-  animation-delay: 120ms;
-}
-
-.names {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  font-family: var(--font-serif);
-  font-size: var(--text-3xl);
-  font-weight: 400;
-  letter-spacing: 0.02em;
+  font-family: var(--font-hand);
+  font-size: clamp(2.4rem, 11.5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.4;
   color: var(--ink);
-  animation-delay: 300ms;
+  white-space: nowrap;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--written) - 5px), rgba(0, 0, 0, 0) var(--written));
+  mask-image: linear-gradient(90deg, #000 calc(var(--written) - 5px), rgba(0, 0, 0, 0) var(--written));
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
-.amp {
-  color: var(--lemon-600);
-  font-size: var(--text-2xl);
+/* Each syllable is measured on its own, so it needs a box of its own. */
+.greeting span {
+  display: inline-block;
 }
 
-.rule {
-  width: 46px;
-  height: 1px;
-  background: var(--gradient-accent);
-  animation-delay: 520ms;
-}
-
-.date {
-  font-family: var(--font-serif);
-  font-size: var(--text-md);
-  letter-spacing: 0.22em;
-  color: var(--ink-muted);
-  animation-delay: 640ms;
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
+/*
+ * With motion off there is no hand to follow, so the line simply stands there —
+ * and dropping the mask outright means it stands there even if the script that
+ * drives --written never runs.
+ */
 @media (prefers-reduced-motion: reduce) {
-  .label,
-  .names,
-  .rule,
-  .date {
-    opacity: 1;
-    animation: none;
+  .greeting {
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }

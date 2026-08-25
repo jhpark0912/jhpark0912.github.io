@@ -1,5 +1,22 @@
 @import './tokens.css';
 
+/*
+ * 나눔손글씨 야근하는 김주임 (© 2019 NAVER Corporation).
+ *
+ * Cut down to the eight glyphs the greeting uses — 2KB against the 3.5MB of the
+ * full 한글 set, which would otherwise be downloaded before the first screen can
+ * show anything. Regenerate with:
+ *
+ *   pyftsubset NanumYaGeunHaNeunGimJuIm.ttf --text='우리, 결혼합니다.' --flavor=woff2  *     --output-file=public/fonts/NanumYaGeunHaNeunGimJuIm-subset.woff2
+ */
+@font-face {
+  font-family: 'NanumYaGeunHaNeunGimJuIm';
+  src: url('/fonts/NanumYaGeunHaNeunGimJuIm-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 *,
 *::before,
 *::after {
