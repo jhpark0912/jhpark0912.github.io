@@ -42,7 +42,7 @@ export function Lightbox({ photos, startIndex, onClose }: LightboxProps) {
 
   useEffect(() => {
     previouslyFocused.current = document.activeElement as HTMLElement | null
-    dialogRef.current?.focus()
+    dialogRef.current?.focus({ preventScroll: true })
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') handlers.current.onClose()
@@ -53,7 +53,7 @@ export function Lightbox({ photos, startIndex, onClose }: LightboxProps) {
     document.addEventListener('keydown', onKeyDown)
     return () => {
       document.removeEventListener('keydown', onKeyDown)
-      previouslyFocused.current?.focus()
+      previouslyFocused.current?.focus({ preventScroll: true })
     }
   }, [])
 

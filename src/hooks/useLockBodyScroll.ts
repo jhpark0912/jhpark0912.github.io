@@ -31,11 +31,25 @@ export function useLockBodyScroll(active: boolean): void {
       body.style.overflowY = 'scroll'
 
       restore = () => {
+        const root = document.documentElement
+        const previousBehavior = root.style.scrollBehavior
+
+        /*
+         * Releasing `position: fixed` drops the page to offset 0, and the
+         * scrollTo below puts it back. That restore must not animate: with the
+         * stylesheet's `scroll-behavior: smooth` it becomes a visible sweep
+         * from the top of the page down to where the guest actually was.
+         * Restoring a position is not navigation.
+         */
+        root.style.scrollBehavior = 'auto'
+
         body.style.position = previous.position
         body.style.top = previous.top
         body.style.width = previous.width
         body.style.overflowY = previous.overflowY
         window.scrollTo(0, scrollY)
+
+        root.style.scrollBehavior = previousBehavior
       }
     }
 

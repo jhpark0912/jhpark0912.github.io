@@ -37,7 +37,7 @@ export function BottomSheet({ open, onClose, title, description, children }: Bot
     if (!open) return
 
     previouslyFocused.current = document.activeElement as HTMLElement | null
-    sheetRef.current?.focus()
+    sheetRef.current?.focus({ preventScroll: true })
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -49,7 +49,7 @@ export function BottomSheet({ open, onClose, title, description, children }: Bot
     document.addEventListener('keydown', onKeyDown)
     return () => {
       document.removeEventListener('keydown', onKeyDown)
-      previouslyFocused.current?.focus()
+      previouslyFocused.current?.focus({ preventScroll: true })
     }
   }, [open])
 
