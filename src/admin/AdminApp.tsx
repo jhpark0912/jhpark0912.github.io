@@ -7,6 +7,7 @@ import { PhotosPanel } from './panels/PhotosPanel'
 import { SectionsPanel } from './panels/SectionsPanel'
 import { GuestbookPanel } from './panels/GuestbookPanel'
 import { RsvpPanel } from './panels/RsvpPanel'
+import { GuidePanel } from './panels/GuidePanel'
 import styles from './Admin.module.css'
 
 /**
@@ -84,7 +85,7 @@ function LoginForm({ notice }: { notice: string }) {
   )
 }
 
-type Tab = 'content' | 'photos' | 'sections' | 'guestbook' | 'rsvp'
+type Tab = 'content' | 'photos' | 'sections' | 'guestbook' | 'rsvp' | 'guide'
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'content', label: '내용' },
@@ -92,6 +93,7 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'sections', label: '순서' },
   { id: 'guestbook', label: '방명록' },
   { id: 'rsvp', label: '참석 여부' },
+  { id: 'guide', label: '가이드' },
 ]
 
 /** The tabs that edit the draft, and therefore need the save bar above them. */
@@ -215,6 +217,7 @@ function Workspace({ session }: { session: AdminSession | null }) {
       {status === 'ready' && tab === 'sections' && <SectionsPanel />}
       {tab === 'guestbook' && <GuestbookPanel />}
       {tab === 'rsvp' && <RsvpPanel />}
+      {tab === 'guide' && <GuidePanel />}
     </main>
   )
 }

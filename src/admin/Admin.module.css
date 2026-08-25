@@ -288,6 +288,58 @@
   color: var(--ink-subtle);
 }
 
+/* Guide tab — a definition list, because every entry is a term the console
+   itself uses and the explanation that goes with it. */
+.guideList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.guideItem {
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  gap: var(--space-4);
+  align-items: baseline;
+}
+
+.guideTerm {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.guideDesc {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.85;
+  color: var(--ink-muted);
+}
+
+.guideDesc strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.guideDesc code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  word-break: break-all;
+}
+
+@media (max-width: 560px) {
+  .guideItem {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
 .groupBody {
   display: flex;
   flex-direction: column;
