@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { wedding } from '../../data/wedding'
-import { hasKakaoKey, loadKakaoMaps, navigationLinks } from '../../lib/kakao'
+import { geocodeAddress, hasKakaoKey, loadKakaoMaps, navigationLinks, type Coordinates } from '../../lib/kakao'
 import { copyText } from '../../lib/clipboard'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
@@ -11,12 +11,21 @@ import styles from './Location.module.css'
 
 type MapState = 'idle' | 'loading' | 'ready' | 'error'
 
+/** Coordinates straight from the data, when they were filled in by hand. */
+function staticCoords(): Coordinates | null {
+  const { lat, lng } = wedding.venue
+  return typeof lat === 'number' && typeof lng === 'number' ? { lat, lng } : null
+}
+
 export function Location() {
   const { venue } = wedding
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [state, setState] = useState<MapState>(hasKakaoKey ? 'idle' : 'error')
+  const [coords, setCoords] = useState<Coordinates | null>(staticCoords)
   const toast = useToast()
-  const links = navigationLinks(venue.name, venue.lat, venue.lng)
+
+  const links = navigationLinks(venue.name, venue.address, coords)
+  const fullAddress = venue.addressDetail ? `${venue.address} ${venue.addressDetail}` : venue.address
 
   // The SDK is fetched only once the map is about to enter the viewport.
   useEffect(() => {
@@ -32,7 +41,17 @@ export function Location() {
         const maps = await loadKakaoMaps()
         if (cancelled) return
 
-        const center = new maps.LatLng(venue.lat, venue.lng)
+        // Prefer hand-entered coordinates; otherwise ask the geocoder, so the
+        // marker follows the address rather than a number copied long ago.
+        const resolved = staticCoords() ?? (await geocodeAddress(maps, venue.address))
+        if (cancelled) return
+
+        if (!resolved) {
+          setState('error')
+          return
+        }
+
+        const center = new maps.LatLng(resolved.lat, resolved.lng)
         const map = new maps.Map(container, { center, level: 4 })
         new maps.Marker({ map, position: center })
 
@@ -41,6 +60,7 @@ export function Location() {
         map.setDraggable(false)
         map.setZoomable(false)
 
+        setCoords(resolved)
         setState('ready')
       } catch {
         if (!cancelled) setState('error')
@@ -63,10 +83,10 @@ export function Location() {
       cancelled = true
       observer.disconnect()
     }
-  }, [venue.lat, venue.lng])
+  }, [venue.address])
 
   const onCopyAddress = async () => {
-    const copied = await copyText(venue.address)
+    const copied = await copyText(fullAddress)
     toast(copied ? '주소를 복사했어요.' : '복사에 실패했어요. 길게 눌러 복사해 주세요.')
   }
 
@@ -75,10 +95,12 @@ export function Location() {
       <Reveal className={styles.venue}>
         <p className={styles.name}>{venue.name}</p>
         <p className={styles.hall}>{venue.hall}</p>
-        <p className={styles.address}>{venue.address}</p>
-        <a className={styles.tel} href={`tel:${venue.tel.replace(/[^0-9+]/g, '')}`}>
-          {venue.tel}
-        </a>
+        <p className={styles.address}>{fullAddress}</p>
+        {venue.tel && (
+          <a className={styles.tel} href={`tel:${venue.tel.replace(/[^0-9+]/g, '')}`}>
+            {venue.tel}
+          </a>
+        )}
       </Reveal>
 
       <Reveal delay={100} className={styles.mapCard}>
@@ -91,7 +113,7 @@ export function Location() {
               ) : (
                 <>
                   <p className={styles.fallbackTitle}>{venue.name}</p>
-                  <p>{venue.address}</p>
+                  <p>{fullAddress}</p>
                   <p className={styles.fallbackHint}>아래 버튼으로 지도 앱에서 확인하실 수 있습니다.</p>
                 </>
               )}
@@ -103,13 +125,7 @@ export function Location() {
           <Button variant="outline" size="sm" onClick={onCopyAddress}>
             주소 복사
           </Button>
-          <LinkButton
-            variant="outline"
-            size="sm"
-            href={links.kakao}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
+          <LinkButton variant="outline" size="sm" href={links.kakao} target="_blank" rel="noreferrer noopener">
             지도 크게 보기
           </LinkButton>
         </div>
@@ -122,9 +138,11 @@ export function Location() {
         <LinkButton variant="soft" size="sm" href={links.naver} target="_blank" rel="noreferrer noopener">
           네이버지도
         </LinkButton>
-        <LinkButton variant="soft" size="sm" href={links.tmap}>
-          T map
-        </LinkButton>
+        {links.tmap && (
+          <LinkButton variant="soft" size="sm" href={links.tmap}>
+            T map
+          </LinkButton>
+        )}
       </Reveal>
 
       <div className={styles.transport}>

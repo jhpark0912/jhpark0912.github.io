@@ -1,27 +1,29 @@
 /**
  * Every piece of copy, contact detail and image path lives here.
  *
- * Replacing the placeholders below is the only edit needed to turn this into
- * the real invitation — no component reads hard-coded wedding data.
+ * Replacing the values below is the only edit needed to keep the invitation up
+ * to date — no component reads hard-coded wedding data.
+ *
+ * Fields left empty hide their part of the page rather than showing a blank:
+ * a host with no phone drops out of the contact sheet, an empty account list
+ * hides the gift section, and an empty venue.tel hides the venue phone link.
  */
 
 export interface Host {
-  /** Displayed as-is, e.g. "박준호". */
+  /** Displayed as-is, e.g. "박재현". */
   name: string
-  /** Shown in the English cover line, e.g. "Junho". */
+  /** Shown in the English cover and footer lines, e.g. "Jaehyun". */
   nameEn: string
   /** Relationship label used in the contact sheet, e.g. "신랑". */
   label: string
   phone: string
+  /** Leave empty when a parent should not appear on the invitation. */
   father: string
   mother: string
   /** Optional — a parent row appears in the contact sheet only when set. */
   fatherPhone?: string
   motherPhone?: string
-  /** Marks a parent as passed away, drawing the customary 故 prefix. */
-  fatherDeceased?: boolean
-  motherDeceased?: boolean
-  /** Position among siblings, e.g. "장남" / "차녀". */
+  /** Position among siblings, e.g. "장남" / "차녀". Empty hides the phrase. */
   order: string
 }
 
@@ -30,8 +32,6 @@ export interface BankAccount {
   bank: string
   number: string
   holder: string
-  /** Optional Kakao Pay money-request link. */
-  kakaopay?: string
 }
 
 export interface GalleryPhoto {
@@ -51,37 +51,33 @@ export const wedding = {
   meta: {
     /** Absolute URL of the published invitation, used for sharing. */
     url: 'https://jhpark0912.github.io/',
-    title: '준호 ♥ 서연 결혼합니다',
-    description: '2026년 11월 8일 일요일 낮 12시, 서울 그레이스홀',
+    title: '재현 ♥ 현정 결혼합니다',
+    description: '2026년 12월 12일 토요일 오후 4시 40분, DMC타워 웨딩 2층 그랜드볼룸',
     /** Card thumbnail for KakaoTalk / OpenGraph. Must be an absolute URL. */
     shareImage: 'https://jhpark0912.github.io/images/share.jpg',
   },
 
   /** Ceremony start time. Always written with the +09:00 offset. */
-  date: '2026-11-08T12:00:00+09:00',
+  date: '2026-12-12T16:40:00+09:00',
 
   groom: {
-    name: '박준호',
-    nameEn: 'Junho',
+    name: '박재현',
+    nameEn: 'Jaehyun',
     label: '신랑',
-    phone: '010-1234-5678',
-    father: '박영수',
-    mother: '김미경',
-    fatherPhone: '010-2222-3333',
-    motherPhone: '010-3333-4444',
-    order: '장남',
+    phone: '',
+    father: '',
+    mother: '',
+    order: '',
   } satisfies Host,
 
   bride: {
-    name: '이서연',
-    nameEn: 'Seoyeon',
+    name: '김현정',
+    nameEn: 'Hyunjung',
     label: '신부',
-    phone: '010-8765-4321',
-    father: '이정훈',
-    mother: '최은희',
-    fatherPhone: '010-5555-6666',
-    motherPhone: '010-6666-7777',
-    order: '차녀',
+    phone: '',
+    father: '',
+    mother: '',
+    order: '',
   } satisfies Host,
 
   greeting: {
@@ -94,25 +90,33 @@ export const wedding = {
   },
 
   venue: {
-    name: '그레이스홀',
-    hall: '3층 그랜드볼룸',
-    address: '서울특별시 강남구 테헤란로 123',
-    tel: '02-123-4567',
-    /** Coordinates drive the Kakao map marker and the navigation buttons. */
-    lat: 37.5006,
-    lng: 127.0364,
+    name: 'DMC타워 웨딩',
+    hall: '2층 그랜드볼룸',
+    address: '서울특별시 마포구 성암로 189',
+    addressDetail: '중소기업 DMC타워 2층',
+    /**
+     * Empty until the hall's number is confirmed; the link hides meanwhile.
+     * Annotated so `as const` does not narrow it to the empty-string literal.
+     */
+    tel: '' as string,
+    /**
+     * Optional. When null the map marker and the navigation links are resolved
+     * from `address` through the Kakao geocoder at runtime, which is both more
+     * accurate and impossible to leave stale.
+     */
+    lat: null as number | null,
+    lng: null as number | null,
     transport: [
       {
         title: '지하철',
-        lines: ['2호선 역삼역 3번 출구에서 도보 5분', '9호선 언주역 7번 출구에서 도보 10분'],
-      },
-      {
-        title: '버스',
-        lines: ['간선 146, 360, 740 — 역삼역 정류장 하차', '지선 3412, 4412 — 국기원입구 정류장 하차'],
+        lines: [
+          '6호선 · 공항철도 · 경의중앙선 디지털미디어시티역 8번 출구와 바로 연결됩니다.',
+          '출구에서 건물 2층 예식장까지 도보 3분 거리입니다.',
+        ],
       },
       {
         title: '주차',
-        lines: ['건물 지하 1~4층 주차장 이용 (2시간 무료)', '만차 시 인근 공영주차장을 안내해 드립니다.'],
+        lines: ['건물 주차장에 500대 동시 주차가 가능합니다.', '예식 당일 주차 요금은 안내 데스크에서 확인해 주세요.'],
       },
     ] satisfies TransportGuide[],
   },
@@ -131,24 +135,17 @@ export const wedding = {
     alt: '신랑 신부의 웨딩 사진',
   },
 
+  /** Empty lists hide the gift section entirely — no half-filled accounts. */
   accounts: {
-    groom: [
-      { label: '신랑 박준호', bank: '국민은행', number: '123456-78-901234', holder: '박준호' },
-      { label: '아버지 박영수', bank: '신한은행', number: '110-234-567890', holder: '박영수' },
-      { label: '어머니 김미경', bank: '농협은행', number: '302-1234-5678-91', holder: '김미경' },
-    ],
-    bride: [
-      { label: '신부 이서연', bank: '카카오뱅크', number: '3333-01-2345678', holder: '이서연' },
-      { label: '아버지 이정훈', bank: '우리은행', number: '1002-345-678901', holder: '이정훈' },
-      { label: '어머니 최은희', bank: '하나은행', number: '123-456789-01234', holder: '최은희' },
-    ],
-  } satisfies Record<'groom' | 'bride', BankAccount[]>,
+    groom: [] as BankAccount[],
+    bride: [] as BankAccount[],
+  },
 
   rsvp: {
     /** Shown above the form; set to '' to hide the note. */
     note: '축하의 마음으로 참석해 주시는 모든 분들을 정성껏 모시고자 합니다. 참석 여부를 알려주시면 준비에 큰 도움이 됩니다.',
     /** Guests can still answer until this moment. */
-    deadline: '2026-10-25T23:59:59+09:00',
+    deadline: '2026-11-28T23:59:59+09:00',
   },
 
   guestbook: {

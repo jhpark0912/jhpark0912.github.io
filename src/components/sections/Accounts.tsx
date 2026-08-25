@@ -35,7 +35,10 @@ export function Accounts() {
   const sides = [
     { key: 'groom', title: '신랑 측', accounts: wedding.accounts.groom },
     { key: 'bride', title: '신부 측', accounts: wedding.accounts.bride },
-  ] as const
+  ].filter((side) => side.accounts.length > 0)
+
+  // Nothing to show beats an empty "마음 전하실 곳" with no accounts in it.
+  if (sides.length === 0) return null
 
   return (
     <Section id="accounts" eyebrow="Gift" title="마음 전하실 곳">

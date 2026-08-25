@@ -65,7 +65,12 @@ export function Contact() {
   const sides = [
     { key: 'groom', title: '신랑 측', host: wedding.groom },
     { key: 'bride', title: '신부 측', host: wedding.bride },
-  ] as const
+  ]
+    .map((side) => ({ ...side, people: peopleOf(side.host) }))
+    .filter((side) => side.people.length > 0)
+
+  // With no phone numbers filled in there is nothing to contact.
+  if (sides.length === 0) return null
 
   return (
     <Section id="contact" eyebrow="Contact" title="연락하기" tinted>
@@ -78,7 +83,7 @@ export function Contact() {
               defaultOpen={index === 0}
             >
               <ul className={styles.rows}>
-                {peopleOf(side.host).map((person) => (
+                {side.people.map((person) => (
                   <ContactRow key={`${person.role}-${person.name}`} person={person} />
                 ))}
               </ul>

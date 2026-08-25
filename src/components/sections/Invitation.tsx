@@ -1,7 +1,29 @@
-import { wedding } from '../../data/wedding'
+import { wedding, type Host } from '../../data/wedding'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
 import styles from './Invitation.module.css'
+
+/**
+ * Renders "아버지 · 어머니 의 장남 이름", degrading to just the role and the
+ * name while the parents' details are still unknown.
+ */
+function HostLine({ host }: { host: Host }) {
+  const parents = [host.father, host.mother].filter(Boolean).join(' · ')
+
+  return (
+    <p className={styles.hostLine}>
+      {parents ? (
+        <>
+          <span className={styles.parents}>{parents}</span>
+          {host.order && <span className={styles.relation}>의 {host.order}</span>}
+        </>
+      ) : (
+        <span className={styles.relation}>{host.label}</span>
+      )}
+      <span className={styles.child}>{host.name}</span>
+    </p>
+  )
+}
 
 export function Invitation() {
   const { groom, bride, greeting } = wedding
@@ -30,20 +52,8 @@ export function Invitation() {
         </div>
 
         <Reveal className={styles.hosts} delay={140}>
-          <p className={styles.hostLine}>
-            <span className={styles.parents}>
-              {groom.father} · {groom.mother}
-            </span>
-            <span className={styles.relation}>의 {groom.order}</span>
-            <span className={styles.child}>{groom.name}</span>
-          </p>
-          <p className={styles.hostLine}>
-            <span className={styles.parents}>
-              {bride.father} · {bride.mother}
-            </span>
-            <span className={styles.relation}>의 {bride.order}</span>
-            <span className={styles.child}>{bride.name}</span>
-          </p>
+          <HostLine host={groom} />
+          <HostLine host={bride} />
         </Reveal>
       </div>
     </Section>

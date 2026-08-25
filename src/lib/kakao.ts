@@ -56,7 +56,9 @@ export function loadKakaoMaps(): Promise<any> {
   if (mapsPromise) return mapsPromise
 
   mapsPromise = loadScript(
-    `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false`,
+    // `services` brings in the geocoder used to turn the venue address into
+    // map coordinates, so no coordinates need to be hand-copied into the data.
+    `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false&libraries=services`,
     'kakao-maps-sdk',
   )
     .then(
@@ -94,18 +96,53 @@ export function loadKakaoShare(): Promise<any> {
   return sharePromise
 }
 
+export interface Coordinates {
+  lat: number
+  lng: number
+}
+
+/**
+ * Resolves a road address to coordinates using the Kakao geocoder.
+ *
+ * Returns null when the address cannot be matched, which the caller treats the
+ * same as having no coordinates at all.
+ */
+export function geocodeAddress(maps: any, address: string): Promise<Coordinates | null> {
+  return new Promise((resolve) => {
+    const geocoder = new maps.services.Geocoder()
+    geocoder.addressSearch(address, (result: any[], status: string) => {
+      if (status !== maps.services.Status.OK || result.length === 0) {
+        resolve(null)
+        return
+      }
+      resolve({ lat: Number(result[0].y), lng: Number(result[0].x) })
+    })
+  })
+}
+
 /**
  * Links that open the venue in each navigation app.
  *
  * Kakao and Naver get https URLs so they still work in a desktop browser or
  * when the app is missing. T map has no such web route, so it uses the custom
- * scheme and silently does nothing when the app is not installed.
+ * scheme and silently does nothing when the app is not installed — and it needs
+ * coordinates, so it is omitted until they are known.
  */
-export function navigationLinks(name: string, lat: number, lng: number) {
-  const encoded = encodeURIComponent(name)
+export function navigationLinks(name: string, address: string, coords: Coordinates | null) {
+  const encodedName = encodeURIComponent(name)
+  const query = encodeURIComponent(`${name} ${address}`.trim())
+
+  if (!coords) {
+    return {
+      kakao: `https://map.kakao.com/link/search/${query}`,
+      naver: `https://map.naver.com/p/search/${query}`,
+      tmap: null,
+    }
+  }
+
   return {
-    kakao: `https://map.kakao.com/link/to/${encoded},${lat},${lng}`,
-    naver: `https://map.naver.com/p/search/${encoded}`,
-    tmap: `tmap://route?goalname=${encoded}&goalx=${lng}&goaly=${lat}`,
+    kakao: `https://map.kakao.com/link/to/${encodedName},${coords.lat},${coords.lng}`,
+    naver: `https://map.naver.com/p/search/${query}`,
+    tmap: `tmap://route?goalname=${encodedName}&goalx=${coords.lng}&goaly=${coords.lat}`,
   }
 }
