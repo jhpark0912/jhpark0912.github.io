@@ -62,16 +62,21 @@ function parentsOf(host: Host): ParentName[] {
 /**
  * Renders "아버지 · 어머니 의 아들 이름", degrading to just the role and the
  * name while the parents' details are still unknown.
+ *
+ * The three parts are always emitted as three cells so the groom's and the
+ * bride's lines share the grid columns declared on `.hosts` — the names then
+ * line up under each other even though "아들"/"딸" and the chrysanthemum make
+ * the lines different widths.
  */
 function HostLine({ host }: { host: Host }) {
   const parents = parentsOf(host)
+  const hasParents = parents.length > 0
 
   return (
     <p className={styles.hostLine}>
-      {parents.length > 0 ? (
-        <>
-          <span className={styles.parents}>
-            {parents.map((parent, index) => (
+      <span className={hasParents ? styles.parents : styles.role}>
+        {hasParents
+          ? parents.map((parent, index) => (
               <Fragment key={parent.name}>
                 {index > 0 && (
                   <span className={styles.separator} aria-hidden="true">
@@ -83,13 +88,10 @@ function HostLine({ host }: { host: Host }) {
                   {parent.name}
                 </span>
               </Fragment>
-            ))}
-          </span>
-          {host.order && <span className={styles.relation}>의 {host.order}</span>}
-        </>
-      ) : (
-        <span className={styles.relation}>{host.label}</span>
-      )}
+            ))
+          : host.label}
+      </span>
+      <span className={styles.relation}>{hasParents && host.order ? `의 ${host.order}` : ''}</span>
       <span className={styles.child}>{host.name}</span>
     </p>
   )
