@@ -1,7 +1,12 @@
 rules_version = '2';
 
-// Deploy from the Firebase console (Firestore → 규칙) or with
-// `firebase deploy --only firestore:rules`.
+// Publish from the Firebase console: Firestore Database -> Rules -> Publish.
+// Note this is the FIRESTORE rules editor, not Realtime Database, whose rules
+// are JSON and will reject this file on line 1.
+//
+// Kept to plain ASCII on purpose: the rules lexer has been seen to fail on
+// non-ASCII characters even inside comments, and it reports those failures at
+// line 1, which makes them very hard to place.
 //
 // Two kinds of writer:
 //
@@ -9,7 +14,7 @@ rules_version = '2';
 //   that is what gates deletion, so a guest can remove their own message and no
 //   one else's.
 //
-//   Admins are real accounts listed in the `admins` collection — one document
+//   Admins are real accounts listed in the `admins` collection - one document
 //   per uid, added by hand in the console. Membership lives in data rather than
 //   in these rules, so adding or removing an admin never means editing and
 //   re-publishing rules. Admins may delete any message and are the only ones
@@ -43,7 +48,7 @@ service cloud.firestore {
 
       allow delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
 
-      // Messages are never edited in place — delete and write a new one.
+      // Messages are never edited in place - delete and write a new one.
       allow update: if false;
     }
 
@@ -66,8 +71,8 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // The allowlist itself is console-only. Nothing on the web may read it —
-    // which also means nobody can enumerate who the admins are — and nothing
+    // The allowlist itself is console-only. Nothing on the web may read it -
+    // which also means nobody can enumerate who the admins are - and nothing
     // may write it, so an admin cannot promote anyone.
     match /admins/{uid} {
       allow read, write: if false;
