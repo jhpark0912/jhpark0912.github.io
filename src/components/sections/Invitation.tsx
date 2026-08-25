@@ -1,4 +1,3 @@
-import { Fragment } from 'react'
 import type { Host } from '../../data/wedding'
 import { useContent } from '../../lib/useSiteConfig'
 import { Section } from '../ui/Section'
@@ -47,51 +46,81 @@ function Chrysanthemum({ size = 15 }: { size?: number }) {
   )
 }
 
-interface ParentName {
-  name: string
-  deceased: boolean
+type ParentRole = 'father' | 'mother'
+
+function isDeceased(host: Host, role: ParentRole): boolean {
+  return Boolean(role === 'father' ? host.fatherDeceased : host.motherDeceased)
 }
 
-function parentsOf(host: Host): ParentName[] {
-  return [
-    { name: host.father, deceased: Boolean(host.fatherDeceased) },
-    { name: host.mother, deceased: Boolean(host.motherDeceased) },
-  ].filter((parent) => parent.name.length > 0)
+/**
+ * Whether a column has to leave room for the chrysanthemum. Reserving the slot
+ * per column rather than per name means the flower widens that column once, for
+ * every line at once, instead of pushing one line's name out of step with the
+ * other's — and a column nobody marks keeps its space.
+ */
+function marksDeceased(hosts: Host[], role: ParentRole): boolean {
+  return hosts.some((host) => host[role].length > 0 && isDeceased(host, role))
+}
+
+/** One parent's name, preceded by the fixed-width marker slot when reserved. */
+function ParentCell({
+  host,
+  role,
+  reserveMarker,
+  className,
+}: {
+  host: Host
+  role: ParentRole
+  reserveMarker: boolean
+  className: string
+}) {
+  const name = host[role]
+
+  return (
+    <span className={className}>
+      {reserveMarker && name.length > 0 && (
+        <span className={styles.marker}>{isDeceased(host, role) && <Chrysanthemum />}</span>
+      )}
+      {name}
+    </span>
+  )
+}
+
+interface MarkedColumns {
+  father: boolean
+  mother: boolean
 }
 
 /**
  * Renders "아버지 · 어머니 의 아들 이름", degrading to just the role and the
  * name while the parents' details are still unknown.
  *
- * The three parts are always emitted as three cells so the groom's and the
- * bride's lines share the grid columns declared on `.hosts` — the names then
- * line up under each other even though "아들"/"딸" and the chrysanthemum make
- * the lines different widths.
+ * Every part is emitted as its own cell — father, separator, mother, relation,
+ * name — so the groom's and the bride's lines share the grid columns declared
+ * on `.hosts`. Each of the five lines up with its counterpart no matter how
+ * much "아들"/"딸" or the chrysanthemum widen one of them.
  */
-function HostLine({ host }: { host: Host }) {
-  const parents = parentsOf(host)
-  const hasParents = parents.length > 0
+function HostLine({ host, marked }: { host: Host; marked: MarkedColumns }) {
+  const hasParents = host.father.length > 0 || host.mother.length > 0
+
+  if (!hasParents) {
+    return (
+      <p className={styles.hostLine}>
+        <span className={styles.role}>{host.label}</span>
+        <span className={styles.relation} />
+        <span className={styles.child}>{host.name}</span>
+      </p>
+    )
+  }
 
   return (
     <p className={styles.hostLine}>
-      <span className={hasParents ? styles.parents : styles.role}>
-        {hasParents
-          ? parents.map((parent, index) => (
-              <Fragment key={parent.name}>
-                {index > 0 && (
-                  <span className={styles.separator} aria-hidden="true">
-                    ·
-                  </span>
-                )}
-                <span className={parent.deceased ? styles.deceasedName : undefined}>
-                  {parent.deceased && <Chrysanthemum />}
-                  {parent.name}
-                </span>
-              </Fragment>
-            ))
-          : host.label}
+      <ParentCell host={host} role="father" reserveMarker={marked.father} className={styles.father} />
+      <span className={styles.separator} aria-hidden="true">
+        {host.father.length > 0 && host.mother.length > 0 ? '·' : ''}
       </span>
-      <span className={styles.relation}>{hasParents && host.order ? `의 ${host.order}` : ''}</span>
+      <ParentCell host={host} role="mother" reserveMarker={marked.mother} className={styles.mother} />
+      <span className={styles.relation}>{host.order ? `의 ${host.order}` : ''}</span>
       <span className={styles.child}>{host.name}</span>
     </p>
   )
@@ -99,6 +128,11 @@ function HostLine({ host }: { host: Host }) {
 
 export function Invitation() {
   const { groom, bride, greeting } = useContent()
+  const hosts = [groom, bride]
+  const marked: MarkedColumns = {
+    father: marksDeceased(hosts, 'father'),
+    mother: marksDeceased(hosts, 'mother'),
+  }
 
   return (
     <Section id="invitation" eyebrow="Invitation" title="초대합니다">
@@ -124,8 +158,8 @@ export function Invitation() {
         </div>
 
         <Reveal className={styles.hosts} delay={140}>
-          <HostLine host={groom} />
-          <HostLine host={bride} />
+          <HostLine host={groom} marked={marked} />
+          <HostLine host={bride} marked={marked} />
         </Reveal>
       </div>
     </Section>

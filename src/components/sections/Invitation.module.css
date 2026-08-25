@@ -40,14 +40,17 @@
 }
 
 /*
- * One grid shared by both host lines: parents end on the same edge, the
- * "의 아들" / "의 딸" phrases share a column, and the two names start on the
- * same edge. Widening one line — the chrysanthemum, a longer name — moves the
+ * One grid shared by both host lines. Each of the five parts — father,
+ * separator, mother, "의 아들"/"의 딸", name — gets its own column, so the
+ * groom's and the bride's line up part for part. Widening one line moves the
  * whole block rather than knocking the two lines out of step.
  */
 .hosts {
+  /* Must match the Chrysanthemum component's default size. */
+  --flower-size: 15px;
+
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto auto auto auto auto;
   justify-content: center;
   align-items: baseline;
   column-gap: 6px;
@@ -57,24 +60,43 @@
   width: 100%;
 }
 
-/* The paragraph keeps the semantics; its three spans are the grid cells. */
+/* The paragraph keeps the semantics; its spans are the grid cells. */
 .hostLine {
   display: contents;
   font-size: var(--text-base);
 }
 
-.parents {
-  display: inline-flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  justify-self: end;
-  gap: 6px;
+.father,
+.mother {
+  white-space: nowrap;
   font-size: var(--text-base);
   color: var(--ink);
 }
 
+/* The two names close in on the separator from either side. */
+.father {
+  justify-self: end;
+}
+
+.mother {
+  justify-self: start;
+}
+
+/*
+ * A slot of exactly the flower's width, left in front of every name in a column
+ * where someone is marked — including the names that carry no flower. The
+ * column then widens once for all lines instead of the marked line alone, so
+ * the names stay aligned and the gap around the separator stays even.
+ */
+.marker {
+  display: inline-block;
+  width: var(--flower-size);
+  margin-right: 5px;
+  text-align: center;
+}
+
 .role {
+  grid-column: span 3;
   justify-self: end;
   white-space: nowrap;
   font-size: var(--text-sm);
@@ -82,20 +104,12 @@
 }
 
 .separator {
+  justify-self: center;
   color: var(--ink-subtle);
 }
 
-/* The chrysanthemum and the name it belongs to stay on one line together. */
-.deceasedName {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  white-space: nowrap;
-}
-
 .flower {
-  align-self: center;
-  flex-shrink: 0;
+  vertical-align: -0.2em;
   color: var(--ink-muted);
 }
 
