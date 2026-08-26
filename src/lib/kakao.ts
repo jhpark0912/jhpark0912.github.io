@@ -158,6 +158,11 @@ function tmapLink(query: string): string | null {
  * `tmapLink` above — and it needs coordinates, so it is omitted until they are
  * known.
  *
+ * Kakao uses `link/map`, which lands on the venue itself with its name on the
+ * marker. `link/to` opens straight into route planning, which assumes the guest
+ * wants directions from where they happen to be standing right now — usually
+ * not the case when the invitation is read days ahead.
+ *
  * Separately: the venue has no hand-entered lat/lng, so this returns a null
  * `tmap` until the Kakao geocoder answers — the button is missing entirely
  * whenever the map fails to load. Filling in the coordinates in `wedding.ts`
@@ -176,7 +181,7 @@ export function navigationLinks(name: string, address: string, coords: Coordinat
   }
 
   return {
-    kakao: `https://map.kakao.com/link/to/${encodedName},${coords.lat},${coords.lng}`,
+    kakao: `https://map.kakao.com/link/map/${encodedName},${coords.lat},${coords.lng}`,
     naver: `https://map.naver.com/p/search/${query}`,
     tmap: tmapLink(`goalname=${encodedName}&goalx=${coords.lng}&goaly=${coords.lat}`),
   }
