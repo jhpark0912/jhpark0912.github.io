@@ -129,7 +129,7 @@ export function Invitation() {
           ))}
         </div>
 
-        <SpotPhoto photo={photos.hosts} ratio="16 / 9" delay={120} className={styles.familyPhoto} />
+        <SpotPhoto photo={photos.hosts} ratio="16 / 9" delay={120} className={styles.couplePhoto} />
 
         <Reveal className={styles.hosts} delay={140}>
           <HostLine host={groom} />

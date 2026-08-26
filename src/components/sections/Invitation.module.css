@@ -36,18 +36,24 @@
 }
 
 /*
- * The family photo runs the full width of the phone, past the section's own
+ * The couple's photo runs the full width of the phone, past the section's own
  * padding, and is cropped short.
  *
  * Wide and low rather than large: it has to be recognisably the people whose
  * names follow it without becoming the picture the section is about — the words
  * above it are still what the section is for. Spanning edge to edge is what
  * makes a band that low look deliberate instead of undersized.
+ *
+ * It sits closer to the names below than to the message above, because these
+ * are the people those names belong to. The column's even gap put it 32px from
+ * both, which reads as a picture closing the message rather than opening the
+ * names.
  */
-.familyPhoto {
+.couplePhoto {
   width: calc(100% + var(--page-padding) * 2);
   margin-left: calc(var(--page-padding) * -1);
   margin-right: calc(var(--page-padding) * -1);
+  margin-bottom: calc(var(--space-5) * -1);
   border-radius: 0;
   border-left: none;
   border-right: none;
@@ -78,6 +84,17 @@
   padding-top: var(--space-5);
   border-top: 1px solid var(--line);
   width: 100%;
+}
+
+/*
+ * With the photo present the hairline is a second divider for the same break —
+ * and a shorter one, since it stops at the page padding the band ignores. The
+ * band is the divider; the rule only has to exist for the couple who leaves the
+ * photo empty, which is the default.
+ */
+.couplePhoto + .hosts {
+  padding-top: var(--space-2);
+  border-top: none;
 }
 
 /* The paragraph keeps the semantics; its two spans are the grid cells. */
