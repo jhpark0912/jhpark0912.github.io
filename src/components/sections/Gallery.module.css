@@ -41,6 +41,7 @@
   height: auto;
   aspect-ratio: 4 / 5;
   object-fit: cover;
+  object-position: var(--photo-focus-x, 50%) var(--photo-focus-y, 50%);
 }
 
 .controls {

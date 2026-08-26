@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 import { useContent } from '../../lib/useSiteConfig'
 import { formatKoreanDate, formatKoreanTime, formatWeekday } from '../../lib/date'
 import styles from './Cover.module.css'
@@ -50,6 +50,12 @@ export function Cover({ started }: CoverProps) {
             src={wedding.cover.image}
             alt={wedding.cover.alt}
             className={styles.image}
+            style={
+              {
+                '--cover-focus-x': wedding.cover.focusX === undefined ? undefined : `${wedding.cover.focusX}%`,
+                '--cover-focus-y': wedding.cover.focusY === undefined ? undefined : `${wedding.cover.focusY}%`,
+              } as CSSProperties
+            }
             fetchPriority="high"
             decoding="async"
           />

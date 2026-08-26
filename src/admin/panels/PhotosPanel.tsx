@@ -12,7 +12,7 @@
  * is still showing it.
  */
 
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { emptyPhoto, type GalleryPhoto, type SpotPhotos } from '../../data/wedding'
 import { formatBytes, preparePhoto, savePhoto, PhotoTooLargeError } from '../../lib/photos'
 import { defaultContent, SPOT_KEYS } from '../../lib/siteConfig'
@@ -20,14 +20,22 @@ import { useDraft } from '../DraftProvider'
 import { move } from '../Fields'
 import styles from '../Admin.module.css'
 
-/** Where each between-sections photo lands, said in the couple's own terms. */
-const SPOT_LABELS: Record<keyof SpotPhotos, { title: string; note: string }> = {
+/**
+ * Where each between-sections photo lands, said in the couple's own terms.
+ *
+ * The `ratio` repeats the crop each slot is rendered at on the invitation so
+ * the preview here can show the same crop. It is duplicated rather than
+ * imported because the invitation states it at the call site — the couple band
+ * as a prop, the other two by taking `SpotPhoto`'s default.
+ */
+const SPOT_LABELS: Record<keyof SpotPhotos, { title: string; note: string; ratio: string }> = {
   hosts: {
-    title: '가족 사진',
-    note: '초대합니다의 부모님·신랑신부 이름 바로 위에, 좌우를 채우는 낮은 띠로 놓입니다.',
+    title: '신랑신부 사진',
+    note: '초대합니다의 부모님·신랑신부 이름 바로 위에, 좌우를 채우는 낮은 띠로 놓입니다. 가로로 찍은 상반신 사진을 권합니다.',
+    ratio: '16 / 9',
   },
-  calendar: { title: '일정 사진', note: '예식 일정의 날짜 아래, 달력 위에 놓입니다.' },
-  farewell: { title: '인사 사진', note: '맨 아래 마지막 인사 바로 위에 놓입니다.' },
+  calendar: { title: '일정 사진', note: '예식 일정의 날짜 아래, 달력 위에 놓입니다.', ratio: '4 / 5' },
+  farewell: { title: '인사 사진', note: '맨 아래 마지막 인사 바로 위에 놓입니다.', ratio: '4 / 5' },
 }
 
 /** Roughly what a guest downloads for the gallery; past this it starts to drag. */
@@ -53,6 +61,98 @@ function uploadedBytes(content: {
   return gallery + spots + (content.cover.photoId ? content.cover.image.length : 0)
 }
 
+/** The centre of a frame, for a photo that has never been nudged off it. */
+const CENTRE = { focusX: 50, focusY: 50 }
+
+/**
+ * Where a photo sits inside the frame it is cropped to, on both axes.
+ *
+ * Both are always offered even though only one of them can move any given
+ * photo: a portrait dropped into the couple band is cropped top and bottom and
+ * ignores 가로, the same portrait in the 4:5 slots is cropped left and right and
+ * ignores 세로. Which one is live flips the moment the couple swaps the photo,
+ * so hiding the inert axis would make the survivor look like the only setting
+ * that had ever existed. The preview beside them shows which one is doing
+ * anything far faster than a sentence could.
+ */
+function FocusFields({
+  focusX,
+  focusY,
+  zoom,
+  name,
+  labelled = true,
+  onChange,
+  onZoom,
+}: {
+  focusX: number
+  focusY: number
+  /** Left out where enlarging is not offered — the cover and the gallery. */
+  zoom?: number
+  /** Names the photo in the sliders' accessible labels, e.g. "커버 사진". */
+  name: string
+  /** Off in the gallery grid, where the card is too narrow for a heading. */
+  labelled?: boolean
+  onChange: (focus: { focusX: number; focusY: number }) => void
+  onZoom?: (zoom: number) => void
+}) {
+  const axes = [
+    { axis: 'x' as const, label: '가로', value: focusX },
+    { axis: 'y' as const, label: '세로', value: focusY },
+  ]
+
+  return (
+    <div className={styles.focusGroup}>
+      {labelled && (
+        <span className={styles.editLabel}>
+          사진 위치
+          <span className={styles.editHint}>틀에 맞춰 잘릴 때 어느 쪽을 남길지 정합니다</span>
+        </span>
+      )}
+
+      {axes.map(({ axis, label, value }) => (
+        <label key={axis} className={styles.focusAxis}>
+          <span aria-hidden="true">{label}</span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={value}
+            className={styles.slider}
+            aria-label={`${name} ${label} 위치`}
+            onChange={(event) => {
+              const next = Number(event.target.value)
+              onChange(axis === 'x' ? { focusX: next, focusY } : { focusX, focusY: next })
+            }}
+          />
+        </label>
+      ))}
+
+      {/*
+        Percent rather than a bare multiplier, and it only goes up: the photo
+        already fills its frame at 100, so a smaller number would pull it away
+        from the edges rather than show more of it.
+      */}
+      {zoom !== undefined && onZoom && (
+        <label className={styles.focusAxis}>
+          <span aria-hidden="true">크기</span>
+          <input
+            type="range"
+            min={100}
+            max={200}
+            step={5}
+            value={Math.round(zoom * 100)}
+            className={styles.slider}
+            aria-label={`${name} 크기`}
+            aria-valuetext={`${Math.round(zoom * 100)}퍼센트`}
+            onChange={(event) => onZoom(Number(event.target.value) / 100)}
+          />
+        </label>
+      )}
+    </div>
+  )
+}
+
 /**
  * One between-sections photo.
  *
@@ -64,21 +164,30 @@ function SpotPhotoRow({
   photo,
   title,
   note,
+  ratio,
   busy,
   onPick,
   onClear,
   onAlt,
+  onFocus,
+  onZoom,
 }: {
   photo: GalleryPhoto
   title: string
   note: string
+  ratio: string
   busy: boolean
   onPick: (files: FileList | null, done: () => void) => void
   onClear: () => void
   onAlt: (alt: string) => void
+  onFocus: (focus: { focusX: number; focusY: number }) => void
+  onZoom: (zoom: number) => void
 }) {
   const input = useRef<HTMLInputElement | null>(null)
   const chosen = Boolean(photo.photoId || photo.src)
+  const focusX = photo.focusX ?? CENTRE.focusX
+  const focusY = photo.focusY ?? CENTRE.focusY
+  const zoom = photo.zoom ?? 1
 
   return (
     <div className={styles.spotRow}>
@@ -86,7 +195,17 @@ function SpotPhotoRow({
       <p className={styles.groupNote}>{note}</p>
 
       <div className={styles.coverRow}>
-        <div className={styles.coverThumb}>
+        <div
+          className={[styles.spotPreview, photo.src ? '' : styles.previewEmpty].filter(Boolean).join(' ')}
+          style={
+            {
+              '--preview-ratio': ratio,
+              '--preview-focus-x': `${focusX}%`,
+              '--preview-focus-y': `${focusY}%`,
+              '--preview-zoom': String(zoom),
+            } as CSSProperties
+          }
+        >
           {photo.src ? <img src={photo.src} alt="" /> : <span className={styles.thumbEmpty}>사진 없음</span>}
         </div>
 
@@ -98,6 +217,21 @@ function SpotPhotoRow({
             <button type="button" className={styles.ghost} onClick={onClear}>
               사진 빼기
             </button>
+          )}
+
+          {/*
+            Offered only once there is a photo: a slider that moves nothing is a
+            control the couple has to work out the purpose of before ignoring.
+          */}
+          {chosen && (
+            <FocusFields
+              focusX={focusX}
+              focusY={focusY}
+              zoom={zoom}
+              name={title}
+              onChange={onFocus}
+              onZoom={onZoom}
+            />
           )}
 
           <label className={styles.editField}>
@@ -195,6 +329,13 @@ export function PhotosPanel() {
     editContent((current) => ({ ...current, photos: { ...current.photos, [key]: photo } }))
 
   const weight = uploadedBytes(content)
+  // Optional on the type, so a fallback is needed even though both the bundled
+  // cover and every stored config carry them.
+  const coverDefaults = defaultContent().cover
+  const coverFocus = {
+    focusX: content.cover.focusX ?? coverDefaults.focusX ?? CENTRE.focusX,
+    focusY: content.cover.focusY ?? coverDefaults.focusY ?? CENTRE.focusY,
+  }
 
   return (
     <div className={styles.editor}>
@@ -210,7 +351,23 @@ export function PhotosPanel() {
         <p className={styles.groupNote}>청첩장을 열었을 때 화면을 가득 채우는 사진입니다.</p>
 
         <div className={styles.coverRow}>
-          <div className={styles.coverThumb}>
+          {/*
+            Framed as the phone frames it — the whole screen — so the sliders
+            below are judged against the crop that actually ships.
+          */}
+          <div
+            className={[styles.spotPreview, content.cover.image ? '' : styles.previewEmpty].filter(Boolean).join(' ')}
+            style={
+              {
+                '--preview-ratio': '9 / 16',
+                // Narrower than the others: at the shared width a 9:16 frame is
+                // 500px tall and pushes its own sliders off the screen.
+                '--preview-max': '168px',
+                '--preview-focus-x': `${coverFocus.focusX}%`,
+                '--preview-focus-y': `${coverFocus.focusY}%`,
+              } as CSSProperties
+            }
+          >
             {content.cover.image ? (
               <img src={content.cover.image} alt="" />
             ) : (
@@ -237,6 +394,15 @@ export function PhotosPanel() {
               >
                 기본 이미지로
               </button>
+            )}
+
+            {content.cover.image && (
+              <FocusFields
+                focusX={coverFocus.focusX}
+                focusY={coverFocus.focusY}
+                name="커버 사진"
+                onChange={(focus) => editContent((current) => ({ ...current, cover: { ...current.cover, ...focus } }))}
+              />
             )}
 
             <label className={styles.editField}>
@@ -276,12 +442,15 @@ export function PhotosPanel() {
             photo={content.photos[key]}
             title={SPOT_LABELS[key].title}
             note={SPOT_LABELS[key].note}
+            ratio={SPOT_LABELS[key].ratio}
             busy={Boolean(busy)}
             onPick={(files, done) => {
               void upload(files, (photo) => setSpot(key, photo), `${SPOT_LABELS[key].title}을`).finally(done)
             }}
             onClear={() => setSpot(key, emptyPhoto())}
             onAlt={(alt) => setSpot(key, { ...content.photos[key], alt })}
+            onFocus={(focus) => setSpot(key, { ...content.photos[key], ...focus })}
+            onZoom={(zoom) => setSpot(key, { ...content.photos[key], zoom })}
           />
         ))}
       </section>
@@ -319,10 +488,29 @@ export function PhotosPanel() {
           <ul className={styles.photoGrid}>
             {content.gallery.map((photo, index) => (
               <li key={photo.photoId ?? photo.src} className={styles.photoCard}>
-                <div className={styles.photoThumb}>
+                {/* Already the carousel's own 4:5, so the thumbnail is the crop. */}
+                <div
+                  className={styles.photoThumb}
+                  style={
+                    {
+                      '--preview-focus-x': `${photo.focusX ?? CENTRE.focusX}%`,
+                      '--preview-focus-y': `${photo.focusY ?? CENTRE.focusY}%`,
+                    } as CSSProperties
+                  }
+                >
                   {photo.src ? <img src={photo.src} alt="" /> : <span className={styles.thumbEmpty}>사진 없음</span>}
                   <span className={styles.photoIndex}>{index + 1}</span>
                 </div>
+
+                <FocusFields
+                  focusX={photo.focusX ?? CENTRE.focusX}
+                  focusY={photo.focusY ?? CENTRE.focusY}
+                  name={`${index + 1}번째 사진`}
+                  labelled={false}
+                  onChange={(focus) =>
+                    setGallery(content.gallery.map((item, i) => (i === index ? { ...item, ...focus } : item)))
+                  }
+                />
 
                 <input
                   className={styles.editInput}

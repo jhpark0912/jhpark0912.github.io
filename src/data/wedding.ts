@@ -52,12 +52,39 @@ export interface GalleryPhoto {
   /** Intrinsic ratio, used to reserve space so the carousel never jumps. */
   width: number
   height: number
+  /**
+   * Which part of the photo survives the crop, as percentages of its own width
+   * and height — 0 keeps the left/top edge, 100 the right/bottom, and the
+   * default 50 the middle.
+   *
+   * Only meaningful where the photo is cropped to a fixed frame it does not
+   * match, which is every between-sections slot. Whichever way the mismatch
+   * runs, centring is a guess: a 4:3 photo loses a quarter of its height to the
+   * 16:9 couple band and can lose the foreheads, while the same photo in the
+   * 4:5 slots below loses its sides instead and can cut whoever stood at the
+   * end. One axis of the pair is always the live one; the couple moves it.
+   */
+  focusX?: number
+  focusY?: number
+  /**
+   * How far the photo is enlarged inside its frame, as a multiplier, anchored
+   * on the focus point above.
+   *
+   * Only ever 1 or more. Below 1 the photo would stop filling its frame and the
+   * page would show through the edges, which in the full-bleed band reads as a
+   * broken image rather than as a smaller picture. A photo too tall for its
+   * frame is fixed by moving the focus, not by shrinking it.
+   */
+  zoom?: number
 }
 
 export interface CoverPhoto {
   photoId?: string
   image: string
   alt: string
+  /** As on a gallery photo, but against the whole screen. Defaults to 50 / 30. */
+  focusX?: number
+  focusY?: number
 }
 
 /**
@@ -78,7 +105,7 @@ export interface SpotPhotos {
 
 /** A slot with nothing in it. Rendered as nothing, not as a placeholder. */
 export function emptyPhoto(): GalleryPhoto {
-  return { src: '', alt: '', width: 1000, height: 1250 }
+  return { src: '', alt: '', width: 1000, height: 1250, focusX: 50, focusY: 50, zoom: 1 }
 }
 
 export interface TransportGuide {
@@ -227,6 +254,10 @@ export const wedding: WeddingContent = {
   cover: {
     image: '/images/cover.svg',
     alt: '신랑 신부의 웨딩 사진',
+    // Above centre: a portrait filling a whole phone screen wants the faces
+    // high, where the names and date below them are not yet covering anything.
+    focusX: 50,
+    focusY: 30,
   },
 
   photos: {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type CSSProperties } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import type { GalleryPhoto } from '../../data/wedding'
 import { useContent } from '../../lib/useSiteConfig'
@@ -56,6 +56,12 @@ export function Gallery() {
                     loading={index === 0 ? 'eager' : 'lazy'}
                     decoding="async"
                     className={styles.image}
+                    style={
+                      {
+                        '--photo-focus-x': photo.focusX === undefined ? undefined : `${photo.focusX}%`,
+                        '--photo-focus-y': photo.focusY === undefined ? undefined : `${photo.focusY}%`,
+                      } as CSSProperties
+                    }
                   />
                 </button>
               </div>

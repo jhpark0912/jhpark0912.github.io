@@ -18,4 +18,13 @@
   height: auto;
   aspect-ratio: var(--spot-ratio, 4 / 5);
   object-fit: cover;
+  object-position: var(--spot-focus-x, 50%) var(--spot-focus-y, 50%);
+  /*
+   * Enlarging happens around the focus point, not the middle of the frame, so
+   * moving the two together behaves the way pinching a photo does: the part
+   * being looked at stays put while the rest grows past the edges the frame
+   * already clips.
+   */
+  transform: scale(var(--spot-zoom, 1));
+  transform-origin: var(--spot-focus-x, 50%) var(--spot-focus-y, 50%);
 }

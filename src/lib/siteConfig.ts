@@ -70,6 +70,28 @@ function num(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
 }
 
+/**
+ * A crop anchor, as a percentage of the photo's own width or height.
+ *
+ * Clamped rather than trusted: it goes straight into a CSS length, and a stored
+ * -400 would slide the photo clean out of its own frame.
+ */
+function percent(value: unknown, fallback: number): number {
+  return Math.min(100, Math.max(0, num(value, fallback)))
+}
+
+/**
+ * An enlargement factor, clamped to between life size and double it.
+ *
+ * The floor is 1 by design, not by caution: a value below it would pull the
+ * photo away from the edges of a frame it is supposed to fill. The ceiling is
+ * what the stored 1400px original still survives — past 2× a phone screen
+ * starts showing the JPEG rather than the photo.
+ */
+function scale(value: unknown, fallback: number): number {
+  return Math.min(2, Math.max(1, num(value, fallback)))
+}
+
 function nullableNum(value: unknown, fallback: number | null): number | null {
   if (value === null) return null
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
@@ -133,6 +155,8 @@ function mergeGallery(value: unknown, fallback: GalleryPhoto[]): GalleryPhoto[] 
         alt: str(raw.alt, ''),
         width: num(raw.width, 1000),
         height: num(raw.height, 1250),
+        focusX: percent(raw.focusX, 50),
+        focusY: percent(raw.focusY, 50),
       }
     })
     // An entry that names neither an upload nor a bundled file would render a
@@ -156,6 +180,9 @@ function mergeSpotPhoto(value: unknown): GalleryPhoto {
     alt: str(raw.alt, ''),
     width: num(raw.width, 1000),
     height: num(raw.height, 1250),
+    focusX: percent(raw.focusX, 50),
+    focusY: percent(raw.focusY, 50),
+    zoom: scale(raw.zoom, 1),
   }
 }
 
@@ -175,6 +202,8 @@ function mergeCover(value: unknown, fallback: CoverPhoto): CoverPhoto {
     ...(photoId ? { photoId } : {}),
     image: str(raw.image, photoId ? '' : fallback.image),
     alt: str(raw.alt, fallback.alt),
+    focusX: percent(raw.focusX, fallback.focusX ?? 50),
+    focusY: percent(raw.focusY, fallback.focusY ?? 50),
   }
 }
 

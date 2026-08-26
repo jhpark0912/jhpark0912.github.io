@@ -515,22 +515,6 @@
   gap: var(--space-4);
 }
 
-.coverThumb {
-  flex-shrink: 0;
-  width: 108px;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  border-radius: var(--radius-sm);
-  background: var(--bg-soft);
-  border: 1px solid var(--line);
-}
-
-.coverThumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .coverActions {
   flex: 1 1 220px;
   display: flex;
@@ -549,6 +533,77 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+
+/*
+ * The preview is cropped to the same band the invitation uses, at the same
+ * anchor, because the 세로 위치 slider means nothing without it — the couple is
+ * choosing what to throw away, and this is where they see it go.
+ *
+ * Wider than the 108px thumbnail beside it for the same reason: a 16:9 band at
+ * that width is 61px tall, too small to tell a forehead from a hairline.
+ */
+.spotPreview {
+  flex: 1 1 240px;
+  max-width: var(--preview-max, 280px);
+  aspect-ratio: var(--preview-ratio, 4 / 5);
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+}
+
+/*
+ * An empty slot is a placeholder, not a preview. At the full width it reserves
+ * 350px of grey for a crop it has nothing to show inside, so it falls back to
+ * the thumbnail this used to be until there is a photo worth previewing.
+ */
+.previewEmpty {
+  flex: 0 0 auto;
+  width: 108px;
+  aspect-ratio: 4 / 5;
+}
+
+.spotPreview img,
+.photoThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--preview-focus-x, 50%) var(--preview-focus-y, 50%);
+  /* Same enlargement the invitation applies, so the preview stays the crop. */
+  transform: scale(var(--preview-zoom, 1));
+  transform-origin: var(--preview-focus-x, 50%) var(--preview-focus-y, 50%);
+}
+
+/* -------------------------------------------------------------- crop focus */
+
+.focusGroup {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  max-width: 280px;
+}
+
+/* The axis letter is fixed-width so both tracks start at the same x. */
+.focusAxis {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+}
+
+.focusAxis > span {
+  flex: 0 0 auto;
+  width: 2.2em;
+}
+
+.slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--lemon-500);
 }
 
 .spotRow + .spotRow {
@@ -587,12 +642,6 @@
   overflow: hidden;
   border-radius: var(--radius-sm);
   background: var(--bg);
-}
-
-.photoThumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .photoIndex {

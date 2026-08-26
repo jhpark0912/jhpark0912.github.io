@@ -27,7 +27,14 @@ export function SpotPhoto({ photo, delay = 0, ratio, className }: SpotPhotoProps
     <Reveal
       delay={delay}
       className={[styles.frame, className].filter(Boolean).join(' ')}
-      style={{ '--spot-ratio': ratio } as CSSProperties}
+      style={
+        {
+          '--spot-ratio': ratio,
+          '--spot-focus-x': photo.focusX === undefined ? undefined : `${photo.focusX}%`,
+          '--spot-focus-y': photo.focusY === undefined ? undefined : `${photo.focusY}%`,
+          '--spot-zoom': photo.zoom === undefined ? undefined : String(photo.zoom),
+        } as CSSProperties
+      }
     >
       <img
         src={photo.src}
