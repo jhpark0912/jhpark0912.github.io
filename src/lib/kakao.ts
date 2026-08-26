@@ -120,37 +120,43 @@ export function geocodeAddress(maps: any, address: string): Promise<Coordinates 
   })
 }
 
+const TMAP_PACKAGE = 'com.skt.tmap.ku'
+const TMAP_STORE_ANDROID = `https://play.google.com/store/apps/details?id=${TMAP_PACKAGE}`
+
+/**
+ * The T map link for the current platform, or null where no link can work.
+ *
+ * `goalname/goalx/goaly` is the parameter set T map actually reads. The
+ * `rGoName/rGoX/rGoY` variant seen in many samples opens the app with no
+ * destination at all, in plain driving mode.
+ *
+ * Android Chrome refuses to follow a bare `tmap://` from an <a href>, which is
+ * why the button did nothing there; it needs Chrome's intent syntax, which also
+ * carries the store link to land on when T map is not installed. iOS must keep
+ * the plain scheme — Safari does not understand intent URLs. On desktop there
+ * is no app to open and no web route to send anyone to, so the caller drops the
+ * button entirely.
+ */
+function tmapLink(query: string): string | null {
+  const ua = typeof navigator === 'undefined' ? '' : navigator.userAgent
+
+  if (/Android/i.test(ua)) {
+    const fallback = encodeURIComponent(TMAP_STORE_ANDROID)
+    return `intent://route?${query}#Intent;scheme=tmap;package=${TMAP_PACKAGE};S.browser_fallback_url=${fallback};end`
+  }
+
+  if (/iPhone|iPad|iPod/i.test(ua)) return `tmap://route?${query}`
+
+  return null
+}
+
 /**
  * Links that open the venue in each navigation app.
  *
  * Kakao and Naver get https URLs so they still work in a desktop browser or
- * when the app is missing. T map has no such web route, so it uses the custom
- * scheme and silently does nothing when the app is not installed — and it needs
- * coordinates, so it is omitted until they are known.
- *
- * KNOWN ISSUE — the T map link does not open on Android. Confirmed by hand on
- * an Android phone; the scheme string itself is correct, so this is not a typo
- * to fix in place. Three things need doing together:
- *
- *  1. Android Chrome refuses to follow a custom scheme from an <a href>. It
- *     needs Chrome's intent syntax instead, which also carries the store link
- *     to fall back to when T map is not installed:
- *
- *       intent://route?goalname=…&goalx=…&goaly=…#Intent;
- *         scheme=tmap;package=com.skt.tmap.ku;
- *         S.browser_fallback_url=<url-encoded Play Store link>;end
- *
- *     iOS must keep the plain `tmap://` form — Safari does not understand
- *     intent URLs — so this function has to branch on the user agent, which
- *     means it can no longer return one string per app.
- *
- *  2. `goalname/goalx/goaly` is the right parameter set and should stay. The
- *     `rGoName/rGoX/rGoY` variant seen in many samples opens T map on Android
- *     with no destination at all, in plain driving mode.
- *
- *  3. Most guests arrive through the KakaoTalk in-app browser, which handles
- *     intent URLs differently again. Whatever we do here has to be tried there
- *     before the invitation goes out, not just in Chrome.
+ * when the app is missing. T map has no such web route, so it goes through
+ * `tmapLink` above — and it needs coordinates, so it is omitted until they are
+ * known.
  *
  * Separately: the venue has no hand-entered lat/lng, so this returns a null
  * `tmap` until the Kakao geocoder answers — the button is missing entirely
@@ -172,6 +178,6 @@ export function navigationLinks(name: string, address: string, coords: Coordinat
   return {
     kakao: `https://map.kakao.com/link/to/${encodedName},${coords.lat},${coords.lng}`,
     naver: `https://map.naver.com/p/search/${query}`,
-    tmap: `tmap://route?goalname=${encodedName}&goalx=${coords.lng}&goaly=${coords.lat}`,
+    tmap: tmapLink(`goalname=${encodedName}&goalx=${coords.lng}&goaly=${coords.lat}`),
   }
 }
