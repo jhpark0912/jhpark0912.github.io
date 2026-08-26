@@ -25,15 +25,13 @@ function csvCell(value: string | number): string {
  * Korean names arrive as mojibake, which is the whole list ruined.
  */
 function downloadCsv(entries: RsvpEntry[]): void {
-  const header = ['이름', '구분', '참석', '인원', '식사', '연락처', '남긴 말', '응답 시각']
+  const header = ['이름', '구분', '참석', '인원', '식사', '응답 시각']
   const rows = entries.map((entry) => [
     entry.name,
     entry.side === 'groom' ? '신랑측' : '신부측',
     entry.attending ? '참석' : '불참',
     entry.attending ? entry.headcount : 0,
     entry.attending ? (MEAL_LABEL[entry.meal] ?? '') : '',
-    entry.phone,
-    entry.note,
     timestamp.format(new Date(entry.createdAt)),
   ])
 
@@ -129,8 +127,6 @@ export function RsvpPanel() {
               <th>참석</th>
               <th>인원</th>
               <th>식사</th>
-              <th>연락처</th>
-              <th>남긴 말</th>
             </tr>
           </thead>
           <tbody>
@@ -141,8 +137,6 @@ export function RsvpPanel() {
                 <td>{entry.attending ? '참석' : '불참'}</td>
                 <td className={styles.numeric}>{entry.attending ? entry.headcount : '—'}</td>
                 <td>{entry.attending ? MEAL_LABEL[entry.meal] : '—'}</td>
-                <td>{entry.phone || '—'}</td>
-                <td className={styles.note}>{entry.note || '—'}</td>
               </tr>
             ))}
           </tbody>

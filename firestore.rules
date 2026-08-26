@@ -51,8 +51,8 @@ service cloud.firestore {
     }
 
     match /rsvp/{responseId} {
-      // Responses carry names and phone numbers, so only an admin may read
-      // them back. The invitation itself never reads this collection.
+      // Responses carry guests' names, so only an admin may read them back.
+      // The invitation itself never reads this collection.
       allow read: if isAdmin();
 
       allow create: if isSignedIn()

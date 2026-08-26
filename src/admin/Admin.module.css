@@ -879,9 +879,3 @@
 .numeric {
   font-variant-numeric: tabular-nums;
 }
-
-.note {
-  max-width: 240px;
-  white-space: normal;
-  color: var(--ink-muted);
-}

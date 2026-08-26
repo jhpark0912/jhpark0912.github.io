@@ -42,8 +42,6 @@ interface FormState {
   attending: boolean
   headcount: number
   meal: MealChoice
-  phone: string
-  note: string
 }
 
 const initialState: FormState = {
@@ -52,8 +50,6 @@ const initialState: FormState = {
   attending: true,
   headcount: 1,
   meal: 'yes',
-  phone: '',
-  note: '',
 }
 
 export function Rsvp() {
@@ -119,8 +115,6 @@ export function Rsvp() {
         // A guest who cannot come still counts as zero heads, not one.
         headcount: state.attending ? state.headcount : 0,
         meal: state.attending ? state.meal : 'no',
-        phone: state.phone.trim(),
-        note: state.note.trim(),
       })
       setStatus('done')
     } catch {
@@ -295,36 +289,6 @@ export function Rsvp() {
                 </div>
               </>
             )}
-
-            <div className={form.field}>
-              <label className={form.label} htmlFor="rsvp-phone">
-                연락처 <span className={form.hint}>(선택)</span>
-              </label>
-              <input
-                id="rsvp-phone"
-                className={form.input}
-                value={state.phone}
-                onChange={(event) => update('phone', event.target.value)}
-                placeholder="010-0000-0000"
-                inputMode="tel"
-                autoComplete="tel"
-                maxLength={20}
-              />
-            </div>
-
-            <div className={form.field}>
-              <label className={form.label} htmlFor="rsvp-note">
-                전하고 싶은 말 <span className={form.hint}>(선택)</span>
-              </label>
-              <textarea
-                id="rsvp-note"
-                className={form.textarea}
-                value={state.note}
-                onChange={(event) => update('note', event.target.value)}
-                placeholder="알레르기, 유아 동반 등 알려주실 내용이 있다면 적어주세요."
-                maxLength={200}
-              />
-            </div>
 
             {error && (
               <p className={form.error} role="alert">

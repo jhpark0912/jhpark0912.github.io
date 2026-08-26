@@ -25,8 +25,6 @@ export interface RsvpEntry {
   attending: boolean
   headcount: number
   meal: MealChoice
-  phone: string
-  note: string
   createdAt: number
 }
 
@@ -142,8 +140,6 @@ export async function listRsvp(): Promise<RsvpEntry[]> {
       attending: Boolean(data.attending),
       headcount: Number(data.headcount ?? 0),
       meal: (['yes', 'no', 'undecided'] as const).includes(data.meal) ? data.meal : 'undecided',
-      phone: String(data.phone ?? ''),
-      note: String(data.note ?? ''),
       createdAt: Number(data.createdAt ?? 0),
     }
   })

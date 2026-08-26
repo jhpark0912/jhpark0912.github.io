@@ -38,8 +38,6 @@ export interface RsvpDraft {
   /** Total heads including the guest themselves. */
   headcount: number
   meal: MealChoice
-  phone: string
-  note: string
 }
 
 export interface PendingEntry {
