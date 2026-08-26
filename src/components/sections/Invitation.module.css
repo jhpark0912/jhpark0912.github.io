@@ -7,10 +7,15 @@
 }
 
 /*
+ * The poem and the message below it are one continuous address to the guest,
+ * so they share a type treatment — two sizes made the second half read as a
+ * footnote to the first.
+ *
  * Kept in the sans face: the serif has no Korean coverage, so italic Korean
  * comes out as a synthetic slant that reads as a rendering fault.
  */
-.poem {
+.poem,
+.message {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -28,15 +33,6 @@
   border-radius: var(--radius-full);
   background: var(--color-primary);
   box-shadow: 0 0 0 6px var(--lemon-100);
-}
-
-.message {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: var(--text-base);
-  line-height: 2;
-  color: var(--ink);
 }
 
 /*
