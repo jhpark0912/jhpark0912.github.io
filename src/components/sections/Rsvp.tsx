@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useContent } from '../../lib/useSiteConfig'
 import { store, type MealChoice, type RsvpSide } from '../../lib/store'
-import { formatKoreanDate } from '../../lib/date'
+import { formatDotDate, formatKoreanDate } from '../../lib/date'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
 import { Button } from '../ui/Button'
@@ -10,6 +10,31 @@ import form from '../ui/Form.module.css'
 import styles from './Rsvp.module.css'
 
 const MAX_HEADCOUNT = 10
+
+/** Holds the KST date the guest last chose "오늘 하루 보지 않기". */
+const DISMISS_KEY = 'rsvp-popup-dismissed'
+/** Lets the cover image settle before the sheet rises. */
+const AUTO_OPEN_DELAY_MS = 700
+
+/*
+ * Private mode and blocked storage make these throw. Failing quietly just means
+ * the guest sees the popup again next visit, which is better than a blank page.
+ */
+function isDismissedToday(): boolean {
+  try {
+    return localStorage.getItem(DISMISS_KEY) === formatDotDate(new Date())
+  } catch {
+    return false
+  }
+}
+
+function dismissForToday() {
+  try {
+    localStorage.setItem(DISMISS_KEY, formatDotDate(new Date()))
+  } catch {
+    // ignored
+  }
+}
 
 interface FormState {
   side: RsvpSide
@@ -37,9 +62,23 @@ export function Rsvp() {
   const [state, setState] = useState<FormState>(initialState)
   const [error, setError] = useState('')
   const [status, setStatus] = useState<'editing' | 'saving' | 'done'>('editing')
+  /**
+   * The popup opens on the short `ask` step and grows into the full form once
+   * the guest answers. Opening from the section button skips straight to `form`.
+   */
+  const [step, setStep] = useState<'ask' | 'form'>('form')
 
   const deadline = new Date(wedding.rsvp.deadline)
   const isClosed = deadline.getTime() < Date.now()
+
+  useEffect(() => {
+    if (isClosed || isDismissedToday()) return
+    const timer = setTimeout(() => {
+      setStep('ask')
+      setOpen(true)
+    }, AUTO_OPEN_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [isClosed])
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setState((current) => ({ ...current, [key]: value }))
@@ -48,7 +87,16 @@ export function Rsvp() {
     setState(initialState)
     setError('')
     setStatus('editing')
+    setStep('form')
     setOpen(true)
+  }
+
+  /** The first answer carries over as the form's preset, so nobody picks twice. */
+  const answer = (attending: boolean) => {
+    setState({ ...initialState, attending })
+    setError('')
+    setStatus('editing')
+    setStep('form')
   }
 
   const onSubmit = async (event: FormEvent) => {
@@ -97,7 +145,9 @@ export function Rsvp() {
         open={open}
         onClose={() => setOpen(false)}
         title="참석 여부 전하기"
-        description={status === 'done' ? undefined : '알려주신 내용은 예식 준비에만 사용됩니다.'}
+        description={
+          status === 'done' || step === 'ask' ? undefined : '알려주신 내용은 예식 준비에만 사용됩니다.'
+        }
       >
         {status === 'done' ? (
           <div className={styles.done}>
@@ -106,6 +156,29 @@ export function Rsvp() {
             <Button block variant="outline" onClick={() => setOpen(false)}>
               닫기
             </Button>
+          </div>
+        ) : step === 'ask' ? (
+          <div className={styles.ask}>
+            <p className={styles.askBody}>{wedding.rsvp.note}</p>
+            <p className={styles.deadline}>{formatKoreanDate(deadline)}까지 알려주세요.</p>
+            <div className={styles.askActions}>
+              <Button block onClick={() => answer(true)}>
+                참석합니다
+              </Button>
+              <Button block variant="outline" onClick={() => answer(false)}>
+                어렵습니다
+              </Button>
+            </div>
+            <button
+              type="button"
+              className={styles.dismiss}
+              onClick={() => {
+                dismissForToday()
+                setOpen(false)
+              }}
+            >
+              오늘 하루 보지 않기
+            </button>
           </div>
         ) : (
           <form className={form.form} onSubmit={onSubmit} noValidate>

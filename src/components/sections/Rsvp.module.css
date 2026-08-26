@@ -24,6 +24,40 @@
   letter-spacing: -0.01em;
 }
 
+/* The short first step of the popup: a greeting and the yes/no answer. */
+.ask {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  text-align: center;
+}
+
+.askBody {
+  font-size: var(--text-sm);
+  line-height: 1.9;
+  color: var(--ink-muted);
+}
+
+.askActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.dismiss {
+  align-self: center;
+  padding: var(--space-2);
+  border: 0;
+  background: none;
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
 .done {
   display: flex;
   flex-direction: column;
