@@ -13,8 +13,16 @@ const MAX_HEADCOUNT = 10
 
 /** Holds the KST date the guest last chose "오늘 하루 보지 않기". */
 const DISMISS_KEY = 'rsvp-popup-dismissed'
-/** Lets the cover image settle before the sheet rises. */
-const AUTO_OPEN_DELAY_MS = 700
+/**
+ * Set once a response goes through, to stop the popup greeting someone who has
+ * already answered.
+ *
+ * It is a note in this browser, not proof of identity: only an admin may read
+ * the responses back, so the page has no way to ask whether a given guest has
+ * replied. Another phone, another browser or cleared storage all look like a
+ * first visit, and the section button still lets anyone answer again.
+ */
+const RESPONDED_KEY = 'rsvp-responded'
 
 /*
  * Private mode and blocked storage make these throw. Failing quietly just means
@@ -31,6 +39,22 @@ function isDismissedToday(): boolean {
 function dismissForToday() {
   try {
     localStorage.setItem(DISMISS_KEY, formatDotDate(new Date()))
+  } catch {
+    // ignored
+  }
+}
+
+function hasResponded(): boolean {
+  try {
+    return localStorage.getItem(RESPONDED_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function rememberResponded() {
+  try {
+    localStorage.setItem(RESPONDED_KEY, 'true')
   } catch {
     // ignored
   }
@@ -67,13 +91,21 @@ export function Rsvp() {
   const deadline = new Date(wedding.rsvp.deadline)
   const isClosed = deadline.getTime() < Date.now()
 
+  // The cover is the first thing a guest sees; interrupting it with a popup is
+  // rude. The sheet waits until the cover has scrolled fully out of view.
   useEffect(() => {
-    if (isClosed || isDismissedToday()) return
-    const timer = setTimeout(() => {
+    if (isClosed || hasResponded() || isDismissedToday()) return
+    const cover = document.getElementById('cover')
+    if (!cover) return
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) return
+      observer.disconnect()
       setStep('ask')
       setOpen(true)
-    }, AUTO_OPEN_DELAY_MS)
-    return () => clearTimeout(timer)
+    })
+    observer.observe(cover)
+    return () => observer.disconnect()
   }, [isClosed])
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -116,6 +148,7 @@ export function Rsvp() {
         headcount: state.attending ? state.headcount : 0,
         meal: state.attending ? state.meal : 'no',
       })
+      rememberResponded()
       setStatus('done')
     } catch {
       setStatus('editing')

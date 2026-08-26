@@ -41,7 +41,7 @@ export function Cover({ started }: CoverProps) {
   }, [])
 
   return (
-    <section className={styles.cover} aria-label="청첩장 표지">
+    <section id="cover" className={styles.cover} aria-label="청첩장 표지">
       <div ref={mediaRef} className={styles.media}>
         {/* Empty while an uploaded cover is still on its way. The veil and the
             page tint already fill the frame, so nothing looks broken. */}
