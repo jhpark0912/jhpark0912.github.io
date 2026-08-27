@@ -34,7 +34,7 @@ interface TextProps extends BaseProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
-  type?: 'text' | 'tel' | 'url' | 'datetime-local' | 'number'
+  type?: 'text' | 'tel' | 'url' | 'datetime-local'
   maxLength?: number
 }
 
@@ -129,6 +129,45 @@ export function Lines({ label, hint, value, onChange, placeholder, rows = 4 }: L
         onChange(lines)
       }}
     />
+  )
+}
+
+interface CountProps extends BaseProps {
+  value: number
+  onChange: (value: number) => void
+  min?: number
+  max?: number
+}
+
+/**
+ * A small whole number, chosen with − and + rather than typed.
+ *
+ * A controlled `type="number"` cannot hold the empty string a guest passes
+ * through while retyping: clearing "5" to type "3" parses as 0, the change is
+ * rejected as out of range, and the field snaps back to "5" mid-keystroke — so
+ * the next digit lands as "53". Buttons have no intermediate state to lose.
+ */
+export function Count({ label, hint, value, onChange, min = 1, max = 20 }: CountProps) {
+  const step = (delta: number) => onChange(Math.min(max, Math.max(min, value + delta)))
+
+  return (
+    <div className={styles.editField}>
+      <span className={styles.editLabel}>
+        {label}
+        {hint && <span className={styles.editHint}>{hint}</span>}
+      </span>
+      <div className={styles.count}>
+        <button type="button" className={styles.countButton} onClick={() => step(-1)} disabled={value <= min}>
+          −
+        </button>
+        <span className={styles.countValue} aria-live="polite">
+          {value}개
+        </span>
+        <button type="button" className={styles.countButton} onClick={() => step(1)} disabled={value >= max}>
+          +
+        </button>
+      </div>
+    </div>
   )
 }
 

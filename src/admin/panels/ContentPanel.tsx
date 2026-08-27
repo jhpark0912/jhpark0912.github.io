@@ -11,7 +11,7 @@
 import type { BankAccount, Host, TransportGuide, WeddingContent } from '../../data/wedding'
 import { fromKstInputValue, toKstInputValue } from '../../lib/date'
 import { useDraft } from '../DraftProvider'
-import { Area, Check, Group, Lines, ListCard, Row, Text, move } from '../Fields'
+import { Area, Check, Count, Group, Lines, ListCard, Row, Text, move } from '../Fields'
 import styles from '../Admin.module.css'
 
 function HostFields({
@@ -328,14 +328,11 @@ export function ContentPanel() {
           rows={2}
           onChange={(note) => patch({ guestbook: { ...content.guestbook, note } })}
         />
-        <Text
-          label="한 페이지에 보여줄 개수"
-          type="number"
-          value={String(content.guestbook.pageSize)}
-          onChange={(value) => {
-            const size = Math.round(Number(value))
-            if (Number.isFinite(size) && size >= 1) patch({ guestbook: { ...content.guestbook, pageSize: size } })
-          }}
+        <Count
+          label="한 번에 보여줄 개수"
+          hint="더보기를 누를 때마다 이만큼 더 나옵니다"
+          value={content.guestbook.pageSize}
+          onChange={(pageSize) => patch({ guestbook: { ...content.guestbook, pageSize } })}
         />
       </Group>
 

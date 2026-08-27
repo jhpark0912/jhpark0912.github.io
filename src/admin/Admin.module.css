@@ -403,6 +403,40 @@
   background: var(--bg);
 }
 
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+}
+
+.countButton {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: var(--text-md);
+  color: var(--ink-muted);
+}
+
+.countButton:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.countValue {
+  min-width: 52px;
+  text-align: center;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
 .check {
   display: flex;
   align-items: center;
