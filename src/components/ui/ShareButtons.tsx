@@ -64,8 +64,8 @@ export function ShareButtons({ className }: { className?: string }) {
       {/* The venue map needs the Kakao key anyway, so it is always there — no
           point hiding this button behind a check that can only fail when the
           map is already broken. A missing key just falls through to the toast. */}
-      <Button size="sm" onClick={onKakaoShare} disabled={sharing} className={styles.kakao}>
-        <span aria-hidden="true">💬</span>
+      <Button size="sm" variant="outline" onClick={onKakaoShare} disabled={sharing}>
+        <span className={styles.kakaoIcon} aria-hidden="true" />
         카톡 공유
       </Button>
 

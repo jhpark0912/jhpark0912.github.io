@@ -12,12 +12,20 @@
   line-height: 1;
 }
 
-/* KakaoTalk's own yellow sits naturally inside a lemon-led palette. */
-.kakao {
-  background: #fee500;
-  color: #191600;
+/*
+ * Kakao's own share button asset, used as a mark inside a plain button.
+ *
+ * It ships as a filled yellow tile, so it needs a light button under it — laid
+ * over a yellow one it reads as a lighter square patch, its #FFEB00 being a
+ * shade off the #FEE500 that button would use. The `_ov` file is the pressed
+ * state Kakao supplies alongside it.
+ */
+.kakaoIcon {
+  width: 18px;
+  height: 18px;
+  background: url('/images/kakaotalk_sharing_btn_small.png') center / contain no-repeat;
 }
 
-.kakao:not(:disabled):hover {
-  background: #f5dc00;
+.row button:active .kakaoIcon {
+  background-image: url('/images/kakaotalk_sharing_btn_small_ov.png');
 }
