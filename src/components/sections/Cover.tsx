@@ -54,6 +54,7 @@ export function Cover({ started }: CoverProps) {
               {
                 '--cover-focus-x': wedding.cover.focusX === undefined ? undefined : `${wedding.cover.focusX}%`,
                 '--cover-focus-y': wedding.cover.focusY === undefined ? undefined : `${wedding.cover.focusY}%`,
+                '--cover-zoom': wedding.cover.zoom === undefined ? undefined : String(wedding.cover.zoom),
               } as CSSProperties
             }
             fetchPriority="high"

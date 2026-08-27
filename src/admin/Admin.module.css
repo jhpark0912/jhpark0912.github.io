@@ -611,33 +611,34 @@
 
 /* -------------------------------------------------------------- crop focus */
 
-.focusGroup {
-  flex-basis: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
-  max-width: 280px;
+/*
+ * The preview is also the way in: pressing the crop opens the editor that
+ * changes it. A separate 위치·크기 조절 button sits beside it as well, because
+ * a picture that happens to be a button is not something everyone tries
+ * pressing.
+ */
+.previewButton {
+  position: relative;
+  display: block;
+  padding: 0;
 }
 
-/* The axis letter is fixed-width so both tracks start at the same x. */
-.focusAxis {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.previewChip {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(28, 26, 18, 0.62);
+  color: #ffffff;
   font-size: var(--text-xs);
-  color: var(--ink-muted);
+  line-height: 1.6;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
-.focusAxis > span {
-  flex: 0 0 auto;
-  width: 2.2em;
-}
-
-.slider {
-  flex: 1 1 auto;
-  min-width: 0;
-  accent-color: var(--lemon-500);
+.previewButton:hover .previewChip,
+.previewButton:focus-visible .previewChip {
+  background: rgba(28, 26, 18, 0.85);
 }
 
 .spotRow + .spotRow {

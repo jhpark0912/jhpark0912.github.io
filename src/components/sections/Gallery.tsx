@@ -60,6 +60,7 @@ export function Gallery() {
                       {
                         '--photo-focus-x': photo.focusX === undefined ? undefined : `${photo.focusX}%`,
                         '--photo-focus-y': photo.focusY === undefined ? undefined : `${photo.focusY}%`,
+                        '--photo-zoom': photo.zoom === undefined ? undefined : String(photo.zoom),
                       } as CSSProperties
                     }
                   />

@@ -18,6 +18,7 @@
 
 import { awaitAuthReady, isFirebaseConfigured, loadFirebase } from './firebase'
 import { readPublicDoc } from './firestoreRest'
+import { clampZoom } from './crop'
 import {
   wedding,
   type BankAccount,
@@ -86,10 +87,11 @@ function percent(value: unknown, fallback: number): number {
  * The floor is 1 by design, not by caution: a value below it would pull the
  * photo away from the edges of a frame it is supposed to fill. The ceiling is
  * what the stored 1400px original still survives — past 2× a phone screen
- * starts showing the JPEG rather than the photo.
+ * starts showing the JPEG rather than the photo. Both bounds come from the
+ * crop editor, so what it offers and what is accepted here cannot drift apart.
  */
 function scale(value: unknown, fallback: number): number {
-  return Math.min(2, Math.max(1, num(value, fallback)))
+  return clampZoom(num(value, fallback))
 }
 
 function nullableNum(value: unknown, fallback: number | null): number | null {
@@ -157,6 +159,7 @@ function mergeGallery(value: unknown, fallback: GalleryPhoto[]): GalleryPhoto[] 
         height: num(raw.height, 1250),
         focusX: percent(raw.focusX, 50),
         focusY: percent(raw.focusY, 50),
+        zoom: scale(raw.zoom, 1),
       }
     })
     // An entry that names neither an upload nor a bundled file would render a
@@ -204,6 +207,7 @@ function mergeCover(value: unknown, fallback: CoverPhoto): CoverPhoto {
     alt: str(raw.alt, fallback.alt),
     focusX: percent(raw.focusX, fallback.focusX ?? 50),
     focusY: percent(raw.focusY, fallback.focusY ?? 50),
+    zoom: scale(raw.zoom, fallback.zoom ?? 1),
   }
 }
 

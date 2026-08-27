@@ -10,13 +10,18 @@
  * the next 게시하기, which is when nothing points at it any more and it is
  * collected. Removing a photo therefore never breaks the live invitation that
  * is still showing it.
+ *
+ * Every photo is shown at the crop it will ship at, and that preview is also
+ * the button that opens `PhotoCropDialog` to change it.
  */
 
-import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
+import { useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode } from 'react'
 import { emptyPhoto, type GalleryPhoto, type SpotPhotos } from '../../data/wedding'
 import { formatBytes, preparePhoto, savePhoto, PhotoTooLargeError } from '../../lib/photos'
+import { DEFAULT_CROP, type Crop } from '../../lib/crop'
 import { defaultContent, SPOT_KEYS } from '../../lib/siteConfig'
 import { useDraft } from '../DraftProvider'
+import { PhotoCropDialog } from '../PhotoCropDialog'
 import { move } from '../Fields'
 import styles from '../Admin.module.css'
 
@@ -24,19 +29,24 @@ import styles from '../Admin.module.css'
  * Where each between-sections photo lands, said in the couple's own terms.
  *
  * The `ratio` repeats the crop each slot is rendered at on the invitation so
- * the preview here can show the same crop. It is duplicated rather than
- * imported because the invitation states it at the call site — the couple band
- * as a prop, the other two by taking `SpotPhoto`'s default.
+ * the preview and the crop editor can show the same crop. It is duplicated
+ * rather than imported because the invitation states it at the call site — the
+ * couple band as a prop, the other two by taking `SpotPhoto`'s default.
  */
-const SPOT_LABELS: Record<keyof SpotPhotos, { title: string; note: string; ratio: string }> = {
+const SPOT_LABELS: Record<keyof SpotPhotos, { title: string; note: string; ratio: number }> = {
   hosts: {
     title: '신랑신부 사진',
     note: '초대합니다의 부모님·신랑신부 이름 바로 위에, 좌우를 채우는 낮은 띠로 놓입니다. 가로로 찍은 상반신 사진을 권합니다.',
-    ratio: '16 / 9',
+    ratio: 16 / 9,
   },
-  calendar: { title: '일정 사진', note: '예식 일정의 날짜 아래, 달력 위에 놓입니다.', ratio: '4 / 5' },
-  farewell: { title: '인사 사진', note: '맨 아래 마지막 인사 바로 위에 놓입니다.', ratio: '4 / 5' },
+  calendar: { title: '일정 사진', note: '예식 일정의 날짜 아래, 달력 위에 놓입니다.', ratio: 4 / 5 },
+  farewell: { title: '인사 사진', note: '맨 아래 마지막 인사 바로 위에 놓입니다.', ratio: 4 / 5 },
 }
+
+/** The carousel's own frame. */
+const GALLERY_RATIO = 4 / 5
+/** A phone screen, which is the frame the cover is cropped to. */
+const COVER_RATIO = 9 / 16
 
 /** Roughly what a guest downloads for the gallery; past this it starts to drag. */
 const HEAVY_TOTAL = 2_600_000
@@ -61,95 +71,73 @@ function uploadedBytes(content: {
   return gallery + spots + (content.cover.photoId ? content.cover.image.length : 0)
 }
 
-/** The centre of a frame, for a photo that has never been nudged off it. */
-const CENTRE = { focusX: 50, focusY: 50 }
+/** Every photo carries the three numbers optionally; the editor needs all three. */
+function cropOf(photo: { focusX?: number; focusY?: number; zoom?: number }): Crop {
+  return {
+    focusX: photo.focusX ?? DEFAULT_CROP.focusX,
+    focusY: photo.focusY ?? DEFAULT_CROP.focusY,
+    zoom: photo.zoom ?? DEFAULT_CROP.zoom,
+  }
+}
 
 /**
- * Where a photo sits inside the frame it is cropped to, on both axes.
+ * A photo at the crop it will ship at, and the way in to changing it.
  *
- * Both are always offered even though only one of them can move any given
- * photo: a portrait dropped into the couple band is cropped top and bottom and
- * ignores 가로, the same portrait in the 4:5 slots is cropped left and right and
- * ignores 세로. Which one is live flips the moment the couple swaps the photo,
- * so hiding the inert axis would make the survivor look like the only setting
- * that had ever existed. The preview beside them shows which one is doing
- * anything far faster than a sentence could.
+ * An empty slot falls back to a small grey placeholder rather than a button:
+ * at the preview's full width it would reserve a lot of nothing, and there is
+ * no crop to adjust until a photo exists.
  */
-function FocusFields({
-  focusX,
-  focusY,
-  zoom,
-  name,
-  labelled = true,
-  onChange,
-  onZoom,
+function CropPreview({
+  src,
+  crop,
+  ratio,
+  label,
+  className,
+  style,
+  children,
+  onOpen,
 }: {
-  focusX: number
-  focusY: number
-  /** Left out where enlarging is not offered — the cover and the gallery. */
-  zoom?: number
-  /** Names the photo in the sliders' accessible labels, e.g. "커버 사진". */
-  name: string
-  /** Off in the gallery grid, where the card is too narrow for a heading. */
-  labelled?: boolean
-  onChange: (focus: { focusX: number; focusY: number }) => void
-  onZoom?: (zoom: number) => void
+  src: string
+  crop: Crop
+  ratio: number
+  /** Names the photo in the button's accessible label. */
+  label: string
+  className: string
+  style?: CSSProperties
+  /** The gallery's position badge; nothing elsewhere. */
+  children?: ReactNode
+  onOpen: () => void
 }) {
-  const axes = [
-    { axis: 'x' as const, label: '가로', value: focusX },
-    { axis: 'y' as const, label: '세로', value: focusY },
-  ]
+  const framing = {
+    '--preview-ratio': String(ratio),
+    '--preview-focus-x': `${crop.focusX}%`,
+    '--preview-focus-y': `${crop.focusY}%`,
+    '--preview-zoom': String(crop.zoom),
+    ...style,
+  } as CSSProperties
+
+  if (!src) {
+    return (
+      <div className={[className, styles.previewEmpty].join(' ')} style={framing}>
+        <span className={styles.thumbEmpty}>사진 없음</span>
+      </div>
+    )
+  }
 
   return (
-    <div className={styles.focusGroup}>
-      {labelled && (
-        <span className={styles.editLabel}>
-          사진 위치
-          <span className={styles.editHint}>틀에 맞춰 잘릴 때 어느 쪽을 남길지 정합니다</span>
-        </span>
-      )}
-
-      {axes.map(({ axis, label, value }) => (
-        <label key={axis} className={styles.focusAxis}>
-          <span aria-hidden="true">{label}</span>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={value}
-            className={styles.slider}
-            aria-label={`${name} ${label} 위치`}
-            onChange={(event) => {
-              const next = Number(event.target.value)
-              onChange(axis === 'x' ? { focusX: next, focusY } : { focusX, focusY: next })
-            }}
-          />
-        </label>
-      ))}
-
-      {/*
-        Percent rather than a bare multiplier, and it only goes up: the photo
-        already fills its frame at 100, so a smaller number would pull it away
-        from the edges rather than show more of it.
-      */}
-      {zoom !== undefined && onZoom && (
-        <label className={styles.focusAxis}>
-          <span aria-hidden="true">크기</span>
-          <input
-            type="range"
-            min={100}
-            max={200}
-            step={5}
-            value={Math.round(zoom * 100)}
-            className={styles.slider}
-            aria-label={`${name} 크기`}
-            aria-valuetext={`${Math.round(zoom * 100)}퍼센트`}
-            onChange={(event) => onZoom(Number(event.target.value) / 100)}
-          />
-        </label>
-      )}
-    </div>
+    <button
+      type="button"
+      className={[className, styles.previewButton].join(' ')}
+      style={framing}
+      onClick={onOpen}
+      aria-label={`${label} 위치·크기 조절`}
+    >
+      <img src={src} alt="" />
+      <span className={styles.previewChip} aria-hidden="true">
+        위치·크기
+      </span>
+      {children}
+    </button>
   )
 }
 
@@ -169,25 +157,20 @@ function SpotPhotoRow({
   onPick,
   onClear,
   onAlt,
-  onFocus,
-  onZoom,
+  onCrop,
 }: {
   photo: GalleryPhoto
   title: string
   note: string
-  ratio: string
+  ratio: number
   busy: boolean
   onPick: (files: FileList | null, done: () => void) => void
   onClear: () => void
   onAlt: (alt: string) => void
-  onFocus: (focus: { focusX: number; focusY: number }) => void
-  onZoom: (zoom: number) => void
+  onCrop: () => void
 }) {
   const input = useRef<HTMLInputElement | null>(null)
   const chosen = Boolean(photo.photoId || photo.src)
-  const focusX = photo.focusX ?? CENTRE.focusX
-  const focusY = photo.focusY ?? CENTRE.focusY
-  const zoom = photo.zoom ?? 1
 
   return (
     <div className={styles.spotRow}>
@@ -195,43 +178,32 @@ function SpotPhotoRow({
       <p className={styles.groupNote}>{note}</p>
 
       <div className={styles.coverRow}>
-        <div
-          className={[styles.spotPreview, photo.src ? '' : styles.previewEmpty].filter(Boolean).join(' ')}
-          style={
-            {
-              '--preview-ratio': ratio,
-              '--preview-focus-x': `${focusX}%`,
-              '--preview-focus-y': `${focusY}%`,
-              '--preview-zoom': String(zoom),
-            } as CSSProperties
-          }
-        >
-          {photo.src ? <img src={photo.src} alt="" /> : <span className={styles.thumbEmpty}>사진 없음</span>}
-        </div>
+        <CropPreview
+          src={photo.src}
+          crop={cropOf(photo)}
+          ratio={ratio}
+          label={title}
+          className={styles.spotPreview}
+          onOpen={onCrop}
+        />
 
         <div className={styles.coverActions}>
           <button type="button" className={styles.ghost} onClick={() => input.current?.click()} disabled={busy}>
             {chosen ? '사진 바꾸기' : '사진 고르기'}
           </button>
+          {/*
+            Offered only once there is a photo: a button that opens an editor
+            with nothing in it is a dead end the couple has to back out of.
+          */}
+          {chosen && (
+            <button type="button" className={styles.ghost} onClick={onCrop}>
+              위치·크기 조절
+            </button>
+          )}
           {chosen && (
             <button type="button" className={styles.ghost} onClick={onClear}>
               사진 빼기
             </button>
-          )}
-
-          {/*
-            Offered only once there is a photo: a slider that moves nothing is a
-            control the couple has to work out the purpose of before ignoring.
-          */}
-          {chosen && (
-            <FocusFields
-              focusX={focusX}
-              focusY={focusY}
-              zoom={zoom}
-              name={title}
-              onChange={onFocus}
-              onZoom={onZoom}
-            />
           )}
 
           <label className={styles.editField}>
@@ -259,11 +231,18 @@ function SpotPhotoRow({
   )
 }
 
+/** Which photo the crop editor is open on, if any. */
+type CropTarget =
+  | { kind: 'cover' }
+  | { kind: 'spot'; key: keyof SpotPhotos }
+  | { kind: 'gallery'; index: number }
+
 export function PhotosPanel() {
   const { config, editContent } = useDraft()
   const content = config.content
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
+  const [cropping, setCropping] = useState<CropTarget | null>(null)
   const coverInput = useRef<HTMLInputElement | null>(null)
   const galleryInput = useRef<HTMLInputElement | null>(null)
 
@@ -328,14 +307,58 @@ export function PhotosPanel() {
   const setSpot = (key: keyof SpotPhotos, photo: GalleryPhoto) =>
     editContent((current) => ({ ...current, photos: { ...current.photos, [key]: photo } }))
 
+  /** What the dialog needs to draw itself, or null once the photo is gone. */
+  const editorFor = (target: CropTarget) => {
+    if (target.kind === 'cover') {
+      if (!content.cover.image) return null
+      return {
+        title: '커버 사진',
+        note: '청첩장을 열었을 때 화면을 가득 채우는 사진입니다. 세로로 긴 화면에 맞춰 잘립니다.',
+        src: content.cover.image,
+        frameRatio: COVER_RATIO,
+        value: cropOf(content.cover),
+      }
+    }
+
+    if (target.kind === 'spot') {
+      const photo = content.photos[target.key]
+      if (!photo.src) return null
+      const label = SPOT_LABELS[target.key]
+      return { title: label.title, note: label.note, src: photo.src, frameRatio: label.ratio, value: cropOf(photo) }
+    }
+
+    const photo = content.gallery[target.index]
+    if (!photo?.src) return null
+    return {
+      title: `${target.index + 1}번째 사진`,
+      note: '갤러리는 세로 4:5 틀에 맞춰 잘립니다. 크게 보기로 열면 사진 전체가 보입니다.',
+      src: photo.src,
+      frameRatio: GALLERY_RATIO,
+      value: cropOf(photo),
+    }
+  }
+
+  const applyCrop = (target: CropTarget, crop: Crop) => {
+    if (target.kind === 'cover') {
+      editContent((current) => ({ ...current, cover: { ...current.cover, ...crop } }))
+    } else if (target.kind === 'spot') {
+      setSpot(target.key, { ...content.photos[target.key], ...crop })
+    } else {
+      setGallery(content.gallery.map((item, index) => (index === target.index ? { ...item, ...crop } : item)))
+    }
+    setCropping(null)
+  }
+
   const weight = uploadedBytes(content)
   // Optional on the type, so a fallback is needed even though both the bundled
   // cover and every stored config carry them.
   const coverDefaults = defaultContent().cover
-  const coverFocus = {
-    focusX: content.cover.focusX ?? coverDefaults.focusX ?? CENTRE.focusX,
-    focusY: content.cover.focusY ?? coverDefaults.focusY ?? CENTRE.focusY,
-  }
+  const coverCrop = cropOf({
+    focusX: content.cover.focusX ?? coverDefaults.focusX,
+    focusY: content.cover.focusY ?? coverDefaults.focusY,
+    zoom: content.cover.zoom ?? coverDefaults.zoom,
+  })
+  const editor = cropping && editorFor(cropping)
 
   return (
     <div className={styles.editor}>
@@ -352,28 +375,18 @@ export function PhotosPanel() {
 
         <div className={styles.coverRow}>
           {/*
-            Framed as the phone frames it — the whole screen — so the sliders
-            below are judged against the crop that actually ships.
+            Framed as the phone frames it — the whole screen. Narrower than the
+            other previews: at the shared width a 9:16 frame is 500px tall.
           */}
-          <div
-            className={[styles.spotPreview, content.cover.image ? '' : styles.previewEmpty].filter(Boolean).join(' ')}
-            style={
-              {
-                '--preview-ratio': '9 / 16',
-                // Narrower than the others: at the shared width a 9:16 frame is
-                // 500px tall and pushes its own sliders off the screen.
-                '--preview-max': '168px',
-                '--preview-focus-x': `${coverFocus.focusX}%`,
-                '--preview-focus-y': `${coverFocus.focusY}%`,
-              } as CSSProperties
-            }
-          >
-            {content.cover.image ? (
-              <img src={content.cover.image} alt="" />
-            ) : (
-              <span className={styles.thumbEmpty}>사진 없음</span>
-            )}
-          </div>
+          <CropPreview
+            src={content.cover.image}
+            crop={coverCrop}
+            ratio={COVER_RATIO}
+            label="커버 사진"
+            className={styles.spotPreview}
+            style={{ '--preview-max': '168px' } as CSSProperties}
+            onOpen={() => setCropping({ kind: 'cover' })}
+          />
 
           <div className={styles.coverActions}>
             <button
@@ -384,6 +397,11 @@ export function PhotosPanel() {
             >
               사진 고르기
             </button>
+            {content.cover.image && (
+              <button type="button" className={styles.ghost} onClick={() => setCropping({ kind: 'cover' })}>
+                위치·크기 조절
+              </button>
+            )}
             {content.cover.photoId && (
               <button
                 type="button"
@@ -394,15 +412,6 @@ export function PhotosPanel() {
               >
                 기본 이미지로
               </button>
-            )}
-
-            {content.cover.image && (
-              <FocusFields
-                focusX={coverFocus.focusX}
-                focusY={coverFocus.focusY}
-                name="커버 사진"
-                onChange={(focus) => editContent((current) => ({ ...current, cover: { ...current.cover, ...focus } }))}
-              />
             )}
 
             <label className={styles.editField}>
@@ -449,8 +458,7 @@ export function PhotosPanel() {
             }}
             onClear={() => setSpot(key, emptyPhoto())}
             onAlt={(alt) => setSpot(key, { ...content.photos[key], alt })}
-            onFocus={(focus) => setSpot(key, { ...content.photos[key], ...focus })}
-            onZoom={(zoom) => setSpot(key, { ...content.photos[key], zoom })}
+            onCrop={() => setCropping({ kind: 'spot', key })}
           />
         ))}
       </section>
@@ -489,28 +497,16 @@ export function PhotosPanel() {
             {content.gallery.map((photo, index) => (
               <li key={photo.photoId ?? photo.src} className={styles.photoCard}>
                 {/* Already the carousel's own 4:5, so the thumbnail is the crop. */}
-                <div
+                <CropPreview
+                  src={photo.src}
+                  crop={cropOf(photo)}
+                  ratio={GALLERY_RATIO}
+                  label={`${index + 1}번째 사진`}
                   className={styles.photoThumb}
-                  style={
-                    {
-                      '--preview-focus-x': `${photo.focusX ?? CENTRE.focusX}%`,
-                      '--preview-focus-y': `${photo.focusY ?? CENTRE.focusY}%`,
-                    } as CSSProperties
-                  }
+                  onOpen={() => setCropping({ kind: 'gallery', index })}
                 >
-                  {photo.src ? <img src={photo.src} alt="" /> : <span className={styles.thumbEmpty}>사진 없음</span>}
                   <span className={styles.photoIndex}>{index + 1}</span>
-                </div>
-
-                <FocusFields
-                  focusX={photo.focusX ?? CENTRE.focusX}
-                  focusY={photo.focusY ?? CENTRE.focusY}
-                  name={`${index + 1}번째 사진`}
-                  labelled={false}
-                  onChange={(focus) =>
-                    setGallery(content.gallery.map((item, i) => (i === index ? { ...item, ...focus } : item)))
-                  }
-                />
+                </CropPreview>
 
                 <input
                   className={styles.editInput}
@@ -554,6 +550,14 @@ export function PhotosPanel() {
           </ul>
         )}
       </section>
+
+      {editor && cropping && (
+        <PhotoCropDialog
+          {...editor}
+          onCancel={() => setCropping(null)}
+          onApply={(crop) => applyCrop(cropping, crop)}
+        />
+      )}
     </div>
   )
 }

@@ -42,6 +42,11 @@
   aspect-ratio: 4 / 5;
   object-fit: cover;
   object-position: var(--photo-focus-x, 50%) var(--photo-focus-y, 50%);
+  /* Enlarged around the focus point, and clipped by the slide's own rounding.
+     The lightbox deliberately does not do this: opening a photo is a request
+     to see the whole of it. */
+  transform: scale(var(--photo-zoom, 1));
+  transform-origin: var(--photo-focus-x, 50%) var(--photo-focus-y, 50%);
 }
 
 .controls {

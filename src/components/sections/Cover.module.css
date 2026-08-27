@@ -18,6 +18,11 @@
   height: 100%;
   object-fit: cover;
   object-position: var(--cover-focus-x, 50%) var(--cover-focus-y, 30%);
+  /* Enlarging happens around the focus point, so the part being looked at
+     stays put while the rest grows past the edges the cover already clips.
+     The parallax scales the wrapper, not this, so the two compose. */
+  transform: scale(var(--cover-zoom, 1));
+  transform-origin: var(--cover-focus-x, 50%) var(--cover-focus-y, 30%);
 }
 
 .veil {

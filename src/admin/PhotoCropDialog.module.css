@@ -1,0 +1,204 @@
+/* The crop editor.
+   Its own stylesheet because the stage is the one place in the admin page with
+   real geometry to describe; everything else there is a form. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(44, 42, 32, 0.55);
+  backdrop-filter: blur(2px);
+  animation: fade-in var(--duration-fast) var(--ease-out);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: min(520px, 100%);
+  max-height: 94svh;
+  overflow-y: auto;
+  padding: var(--space-5);
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.note {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+}
+
+/* ------------------------------------------------------------------ stage */
+
+.stageWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+/*
+ * Given the photo's own shape, so the box the window's percentages are
+ * measured against is exactly the photo — no letterboxing to subtract,
+ * whatever shape the couple uploaded.
+ *
+ * Driven from the width so a photo smaller than the dialog is still shown at a
+ * size worth dragging. The cap is "as wide as this photo would be if it were
+ * as tall as it may get", which is what keeps a tall one inside the height
+ * budget without a max-height — against a set width that would squash it.
+ */
+.stage {
+  --photo-height: min(46svh, 420px);
+  position: relative;
+  flex: 0 0 auto;
+  width: min(100%, calc(var(--photo-height) * var(--photo-ratio, 1)));
+  aspect-ratio: var(--photo-ratio, 1);
+  line-height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  /* The whole gesture is a drag; the page must not scroll underneath it. */
+  touch-action: none;
+  cursor: grab;
+}
+
+.stage:active {
+  cursor: grabbing;
+}
+
+.stage:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* Fills the stage exactly, which is already the photo's own shape. */
+.photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/*
+ * The bright window. The vast shadow is what darkens everything outside it —
+ * one element instead of four, and it can never leave a seam.
+ */
+.window {
+  position: absolute;
+  box-shadow: 0 0 0 9999px rgba(28, 26, 18, 0.62);
+  outline: 2px solid rgba(255, 255, 255, 0.95);
+  outline-offset: -1px;
+}
+
+/* Thirds, faintly — enough to line a horizon or a pair of shoulders up on. */
+.window::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, transparent 33.33%, rgba(255, 255, 255, 0.35) 33.33%, rgba(255, 255, 255, 0.35) calc(33.33% + 1px), transparent calc(33.33% + 1px), transparent 66.66%, rgba(255, 255, 255, 0.35) 66.66%, rgba(255, 255, 255, 0.35) calc(66.66% + 1px), transparent calc(66.66% + 1px)),
+    linear-gradient(to bottom, transparent 33.33%, rgba(255, 255, 255, 0.35) 33.33%, rgba(255, 255, 255, 0.35) calc(33.33% + 1px), transparent calc(33.33% + 1px), transparent 66.66%, rgba(255, 255, 255, 0.35) 66.66%, rgba(255, 255, 255, 0.35) calc(66.66% + 1px), transparent calc(66.66% + 1px));
+}
+
+.loading {
+  padding: var(--space-6) var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+}
+
+/* --------------------------------------------------------------- controls */
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.hint {
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+}
+
+.zoomRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+}
+
+.zoomRow > span:first-child {
+  flex: 0 0 auto;
+  width: 2.2em;
+}
+
+.slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--lemon-500);
+}
+
+.zoomValue {
+  flex: 0 0 auto;
+  width: 3.4em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* The admin's primary button is sized for a form, where it fills the width. In
+   a row of its own it needs sides and a matching height, exactly as the save
+   bar gives it. */
+.foot button {
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: var(--text-xs);
+}
+
+.foot .reset {
+  margin-right: auto;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    animation: none;
+  }
+}

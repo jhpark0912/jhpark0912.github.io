@@ -85,6 +85,10 @@ export interface CoverPhoto {
   /** As on a gallery photo, but against the whole screen. Defaults to 50 / 30. */
   focusX?: number
   focusY?: number
+  /** As on a gallery photo. A phone screen is a tall frame; a landscape photo
+      dropped into it loses most of its width, and enlarging is how the couple
+      trades the rest of that width for the part they wanted. */
+  zoom?: number
 }
 
 /**
