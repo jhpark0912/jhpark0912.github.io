@@ -32,22 +32,11 @@
   text-align: left;
 }
 
-.titleGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
 .title {
+  min-width: 0;
   font-size: var(--text-base);
   font-weight: 600;
   letter-spacing: -0.01em;
-}
-
-.subtitle {
-  font-size: var(--text-xs);
-  color: var(--ink-muted);
 }
 
 .chevron {
@@ -83,4 +72,17 @@
 .panelContent {
   padding: 16px 18px 18px;
   border-top: 1px solid var(--line);
+}
+
+/*
+ * 오시는 길 keeps the roomier default: its panels hold prose that wants a
+ * margin to read against. 마음 전하실 곳 holds two or three account rows a
+ * guest copies and leaves, so the padding there is inset rather than framing.
+ */
+.compact .trigger {
+  padding: 12px 14px;
+}
+
+.compact .panelContent {
+  padding: 12px 14px 14px;
 }

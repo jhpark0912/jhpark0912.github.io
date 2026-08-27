@@ -8,6 +8,24 @@
 }
 
 /*
+ * Tighter vertical rhythm for the sections a guest acts in rather than reads.
+ *
+ * The full --space-9 padding frames a photo, a date or a greeting; it does not
+ * frame a button. 마음 전하실 곳, 참석 여부 and 축하 메시지 close the page,
+ * where the scroll has run longest and the sections with something to collect
+ * live, so they trade the framing for reach. The seam hairline still marks the
+ * boundary.
+ */
+.compact {
+  padding-top: var(--space-7);
+  padding-bottom: var(--space-7);
+}
+
+.compact .header {
+  margin-bottom: var(--space-5);
+}
+
+/*
  * A hairline at every seam between neighbouring sections.
  *
  * The tint used to carry this on its own, which held only while tinted and

@@ -4,18 +4,22 @@ import styles from './Accordion.module.css'
 interface AccordionProps {
   title: ReactNode
   children: ReactNode
-  defaultOpen?: boolean
-  /** Optional secondary line under the title, e.g. a bank name. */
-  subtitle?: ReactNode
   variant?: 'card' | 'plain'
+  /** Tighter padding, for a short list that needs no framing of its own. */
+  compact?: boolean
 }
 
-export function Accordion({ title, subtitle, children, defaultOpen = false, variant = 'card' }: AccordionProps) {
-  const [open, setOpen] = useState(defaultOpen)
+export function Accordion({ title, children, variant = 'card', compact = false }: AccordionProps) {
+  const [open, setOpen] = useState(false)
   const panelId = useId()
 
   return (
-    <div className={`${styles.item} ${variant === 'plain' ? styles.plain : ''}`} data-open={open}>
+    <div
+      className={[styles.item, variant === 'plain' ? styles.plain : '', compact ? styles.compact : '']
+        .filter(Boolean)
+        .join(' ')}
+      data-open={open}
+    >
       <button
         type="button"
         className={styles.trigger}
@@ -23,10 +27,7 @@ export function Accordion({ title, subtitle, children, defaultOpen = false, vari
         aria-controls={panelId}
         onClick={() => setOpen((value) => !value)}
       >
-        <span className={styles.titleGroup}>
-          <span className={styles.title}>{title}</span>
-          {subtitle && <span className={styles.subtitle}>{subtitle}</span>}
-        </span>
+        <span className={styles.title}>{title}</span>
         <span className={styles.chevron} aria-hidden="true" />
       </button>
 

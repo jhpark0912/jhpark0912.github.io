@@ -166,7 +166,7 @@ export function Location() {
       <div className={styles.transport}>
         {venue.transport.map((guide, index) => (
           <Reveal key={guide.title} delay={index * 80}>
-            <Accordion title={guide.title} variant="plain" defaultOpen={index === 0}>
+            <Accordion title={guide.title} variant="plain">
               <ul className={styles.guideLines}>
                 {guide.lines.map((line) => (
                   <li key={line}>{line}</li>

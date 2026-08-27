@@ -10,14 +10,26 @@ interface SectionProps {
   children: ReactNode
   /** Warm tinted background, used to separate neighbouring sections. */
   tinted?: boolean
+  /** Tighter vertical padding, for sections a guest acts in rather than reads. */
+  compact?: boolean
   className?: string
 }
 
-export function Section({ id, eyebrow, title, children, tinted = false, className }: SectionProps) {
+export function Section({
+  id,
+  eyebrow,
+  title,
+  children,
+  tinted = false,
+  compact = false,
+  className,
+}: SectionProps) {
   return (
     <section
       id={id}
-      className={[styles.section, tinted ? styles.tinted : '', className ?? ''].filter(Boolean).join(' ')}
+      className={[styles.section, tinted ? styles.tinted : '', compact ? styles.compact : '', className ?? '']
+        .filter(Boolean)
+        .join(' ')}
       aria-labelledby={title ? `${id}-title` : undefined}
     >
       {(eyebrow || title) && (

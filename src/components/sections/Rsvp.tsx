@@ -157,7 +157,7 @@ export function Rsvp() {
   }
 
   return (
-    <Section id="rsvp" eyebrow="R.S.V.P" title="참석 여부 전하기" tinted>
+    <Section id="rsvp" eyebrow="R.S.V.P" title="참석 여부 전하기" tinted compact>
       <Reveal className={styles.card}>
         <p className={styles.note}>{wedding.rsvp.note}</p>
         <p className={styles.deadline}>
