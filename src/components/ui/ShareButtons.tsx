@@ -11,8 +11,18 @@ export function ShareButtons({ className }: { className?: string }) {
   const [sharing, setSharing] = useState(false)
   const toast = useToast()
   const { meta } = useContent()
-  // Prefer the address the guest actually opened, so a preview deploy shares itself.
-  const url = typeof window !== 'undefined' ? window.location.href : meta.url
+  /*
+   * Always the invitation's own address, never the tab's.
+   *
+   * This used to read `window.location.href`, on the reasoning that a preview
+   * deploy should share itself. What it actually did was hand out whatever
+   * address the button happened to be pressed from — and a message sent from
+   * KakaoTalk keeps its link forever, so one press from the dev server put a
+   * permanent `http://localhost:5173/` in a chat room. `/?preview=draft`, the
+   * link the admin page opens to preview an unpublished edit, went out the same
+   * way. There is one address guests should ever receive, and it is this one.
+   */
+  const url = meta.url
 
   const onKakaoShare = async () => {
     if (sharing) return
