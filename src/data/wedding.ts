@@ -172,7 +172,7 @@ export interface WeddingContent {
   }
   guestbook: {
     note: string
-    /** Cards shown per page in the guestbook list. */
+    /** Messages shown at first, and added by each press of 더보기. */
     pageSize: number
   }
 }
@@ -278,7 +278,7 @@ export const wedding: WeddingContent = {
 
   guestbook: {
     note: '따뜻한 축하의 말씀을 남겨주세요.',
-    pageSize: 5,
+    pageSize: 3,
   },
 }
 

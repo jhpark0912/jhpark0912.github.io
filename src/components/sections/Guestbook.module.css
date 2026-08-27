@@ -24,31 +24,22 @@
   word-break: break-all;
 }
 
+/*
+ * Messages read as a thread, not as a stack of cards.
+ *
+ * Each note used to carry a border, a shadow and a lemon spine — three separate
+ * ways of saying "this is one entry", on every entry, five to a page. A rule
+ * between neighbours says it once. What is left is the message itself, which is
+ * the only part a guest came here to read.
+ */
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
 }
 
 .card {
-  position: relative;
-  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--line);
-  background: var(--bg);
-  box-shadow: var(--shadow-sm);
-}
-
-/* A slim lemon spine marks each note as a card without adding a heavy border. */
-.card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 14px;
-  bottom: 14px;
-  width: 3px;
-  border-radius: var(--radius-full);
-  background: var(--gradient-accent);
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .cardHead {
@@ -56,12 +47,13 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-2);
+  margin-bottom: 4px;
 }
 
 .name {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: 600;
+  line-height: 1.5;
   letter-spacing: -0.01em;
 }
 
@@ -73,47 +65,44 @@
 
 .message {
   font-size: var(--text-sm);
-  line-height: 1.85;
+  line-height: 1.7;
   color: var(--ink-muted);
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .delete {
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
   font-size: var(--text-xs);
   color: var(--ink-subtle);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  margin-top: var(--space-5);
-}
-
-.pageArrow {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
+/*
+ * Deliberately smaller than 축하 메시지 남기기 below it. Both are buttons in the
+ * same column, and the one that matters is the one that adds a message — a
+ * 더보기 sized to match would compete with it.
+ */
+.more {
+  display: block;
+  margin: var(--space-4) auto 0;
+  padding: 6px 14px;
   border-radius: var(--radius-full);
   border: 1px solid var(--line);
   background: var(--bg);
-  font-size: var(--text-lg);
+  font-size: var(--text-xs);
   color: var(--ink-muted);
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
-.pageArrow:disabled {
-  opacity: 0.35;
+.more:active {
+  background: var(--lemon-50);
 }
 
-.pageInfo {
-  font-size: var(--text-sm);
-  color: var(--ink-muted);
+.moreCount {
+  margin-left: 4px;
+  color: var(--ink-subtle);
   font-variant-numeric: tabular-nums;
 }
 

@@ -28,7 +28,11 @@ export function Guestbook() {
   const [ownerId, setOwnerId] = useState('')
   const [loadState, setLoadState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [loadError, setLoadError] = useState('')
-  const [page, setPage] = useState(0)
+  /**
+   * How many times 더보기 has been pressed, rather than a message count: the
+   * step comes from the admin config, which can arrive after the first render.
+   */
+  const [extraSteps, setExtraSteps] = useState(0)
 
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
@@ -38,7 +42,7 @@ export function Guestbook() {
 
   const toast = useToast()
   const { guestbook } = useContent()
-  const pageSize = guestbook.pageSize
+  const step = guestbook.pageSize
 
   const load = useCallback(async () => {
     setLoadState('loading')
@@ -64,11 +68,9 @@ export function Guestbook() {
     void load()
   }, [inView, loadState, load])
 
-  const pageCount = Math.max(1, Math.ceil(entries.length / pageSize))
-  const visible = useMemo(
-    () => entries.slice(page * pageSize, page * pageSize + pageSize),
-    [entries, page, pageSize],
-  )
+  const limit = step * (extraSteps + 1)
+  const remaining = Math.max(0, entries.length - limit)
+  const visible = useMemo(() => entries.slice(0, limit), [entries, limit])
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -95,7 +97,6 @@ export function Guestbook() {
       // made submitting feel like it hung on a slow connection.
       setEntries((current) => [entry, ...current])
       if (!ownerId) setOwnerId(entry.ownerId)
-      setPage(0)
       setName('')
       setMessage('')
       setOpen(false)
@@ -125,7 +126,7 @@ export function Guestbook() {
   }
 
   return (
-    <Section id="guestbook" eyebrow="Guestbook" title="축하 메시지">
+    <Section id="guestbook" eyebrow="Guestbook" title="축하 메시지" compact>
       <div ref={sectionRef}>
         <Reveal className={styles.intro}>
           <p>{guestbook.note}</p>
@@ -170,30 +171,10 @@ export function Guestbook() {
           </ul>
         )}
 
-        {pageCount > 1 && (
-          <div className={styles.pagination}>
-            <button
-              type="button"
-              className={styles.pageArrow}
-              onClick={() => setPage((value) => Math.max(0, value - 1))}
-              disabled={page === 0}
-              aria-label="이전 페이지"
-            >
-              ‹
-            </button>
-            <span className={styles.pageInfo}>
-              {page + 1} / {pageCount}
-            </span>
-            <button
-              type="button"
-              className={styles.pageArrow}
-              onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}
-              disabled={page >= pageCount - 1}
-              aria-label="다음 페이지"
-            >
-              ›
-            </button>
-          </div>
+        {remaining > 0 && (
+          <button type="button" className={styles.more} onClick={() => setExtraSteps((value) => value + 1)}>
+            더보기 <span className={styles.moreCount}>{remaining}</span>
+          </button>
         )}
 
         <Reveal delay={100} className={styles.writeWrap}>
