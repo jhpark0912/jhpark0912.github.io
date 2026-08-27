@@ -1,0 +1,23 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* Emoji arrive with their own metrics; hold them to the label's line so the
+   button height stays the same as a text-only one. */
+.row span {
+  font-size: 0.95em;
+  line-height: 1;
+}
+
+/* KakaoTalk's own yellow sits naturally inside a lemon-led palette. */
+.kakao {
+  background: #fee500;
+  color: #191600;
+}
+
+.kakao:not(:disabled):hover {
+  background: #f5dc00;
+}

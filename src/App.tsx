@@ -10,7 +10,6 @@ import { Location } from './components/sections/Location'
 import { Accounts } from './components/sections/Accounts'
 import { Rsvp } from './components/sections/Rsvp'
 import { Guestbook } from './components/sections/Guestbook'
-import { ShareSection } from './components/sections/ShareSection'
 import { Footer } from './components/sections/Footer'
 import { SiteConfigProvider, useSections } from './lib/useSiteConfig'
 import type { SectionId } from './data/sections'
@@ -31,7 +30,6 @@ const SECTIONS: Record<SectionId, ReactNode> = {
   accounts: <Accounts />,
   rsvp: <Rsvp />,
   guestbook: <Guestbook />,
-  share: <ShareSection />,
 }
 
 function InvitationPage() {

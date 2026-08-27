@@ -2,7 +2,7 @@
  * The order and visibility of the invitation's scrollable sections.
  *
  * The cover always comes first and the footer always last — neither reads as
- * anything else — so only the nine sections between them are arrangeable. The
+ * anything else — so only the eight sections between them are arrangeable. The
  * admin page reorders and hides them; `normaliseSections` below is what keeps a
  * stored arrangement working after this list changes in code.
  */
@@ -16,7 +16,6 @@ export const SECTION_IDS = [
   'accounts',
   'rsvp',
   'guestbook',
-  'share',
 ] as const
 
 export type SectionId = (typeof SECTION_IDS)[number]
@@ -36,7 +35,6 @@ export const SECTION_LABELS: Record<SectionId, string> = {
   accounts: '마음 전하실 곳',
   rsvp: '참석 여부',
   guestbook: '축하 메시지',
-  share: '공유하기',
 }
 
 export const DEFAULT_SECTIONS: SectionSetting[] = SECTION_IDS.map((id) => ({ id, visible: true }))
