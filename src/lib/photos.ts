@@ -6,7 +6,7 @@
  * and kept as a data URL inside its own Firestore document, `photos/{id}`.
  *
  * That puts a hard ceiling on a photo: a Firestore document may not exceed
- * 1 MiB, and base64 inflates bytes by a third. `BUDGET` below stays well under
+ * 1 MiB, and base64 inflates bytes by a third. The budgets below stay under
  * that, which also keeps the invitation light — a gallery of a dozen shots is
  * a dozen documents a guest's phone has to download.
  *
@@ -24,13 +24,30 @@ import { referencedPhotoIds, SPOT_KEYS } from './siteConfig'
 const MAX_EDGE = 1400
 
 /**
- * Largest data URL we will store, in characters.
+ * How far a photo may be resized and how many characters it may occupy.
  *
- * Firestore's limit is 1,048,576 bytes for the whole document. Staying near a
- * third of it leaves room for the other fields and, more importantly, keeps a
- * ten-photo gallery around 3 MB rather than 10 MB.
+ * The gallery is read inside a 430px column, so 1400px already exceeds what
+ * any screen resolves there and the budget is what limits quality. The cover
+ * is the one full-bleed element — it stretches to the whole viewport, and on a
+ * desktop monitor a 1400px source is visibly upscaled — so it gets its own,
+ * larger allowance. It is a single photo, so the extra weight is paid once
+ * rather than once per gallery slide.
  */
-const BUDGET = 340_000
+export interface PhotoProfile {
+  maxEdge: number
+  budget: number
+}
+
+export const GALLERY_PROFILE: PhotoProfile = { maxEdge: MAX_EDGE, budget: 340_000 }
+export const COVER_PROFILE: PhotoProfile = { maxEdge: 2000, budget: 700_000 }
+
+/*
+ * Both budgets above are characters of data URL, which is very nearly bytes in
+ * the document. Firestore's limit is 1,048,576 bytes for the whole document,
+ * so even the cover's 700,000 leaves room to spare; the gallery's 340,000 is
+ * set by what a guest downloads, not by the limit — every slide is fetched
+ * before the carousel can draw, so the figure multiplies by the photo count.
+ */
 
 /** Quality ladder walked down until the encoded photo fits the budget. */
 const QUALITY_STEPS = [0.82, 0.72, 0.62, 0.52, 0.42]
@@ -78,17 +95,41 @@ function decode(dataUrl: string): Promise<HTMLImageElement> {
 }
 
 /**
+ * The encoded format, decided once and reused.
+ *
+ * WebP holds roughly a third more detail than JPEG for the same number of
+ * bytes, which is what keeps the ladder below from having to descend into the
+ * qualities where blocking becomes visible in skin and fabric.
+ *
+ * It has to be probed rather than assumed: a browser handed a type it cannot
+ * encode does not fail, it quietly returns PNG — which would overrun every
+ * budget here and never say why. Reading the prefix back is the only way to
+ * learn what was actually produced.
+ */
+let encoding: string | null = null
+
+function encodedType(canvas: HTMLCanvasElement): string {
+  if (!encoding) {
+    encoding = canvas.toDataURL('image/webp', 0.8).startsWith('data:image/webp') ? 'image/webp' : 'image/jpeg'
+  }
+  return encoding
+}
+
+/**
  * Shrinks a picked file into a data URL small enough to store.
  *
- * The photo is scaled so its longest edge is at most `MAX_EDGE`, then encoded
- * as JPEG at descending quality until it fits. A photo that still will not fit
+ * The photo is scaled so its longest edge is at most the profile's, then
+ * encoded at descending quality until it fits. A photo that still will not fit
  * at the lowest quality is scaled to three quarters and tried again; two such
  * rounds are enough for anything a phone camera produces.
  */
-export async function preparePhoto(file: File): Promise<Omit<StoredPhoto, 'id' | 'createdAt'>> {
+export async function preparePhoto(
+  file: File,
+  profile: PhotoProfile = GALLERY_PROFILE,
+): Promise<Omit<StoredPhoto, 'id' | 'createdAt'>> {
   const image = await decode(await readAsDataUrl(file))
 
-  let scale = Math.min(1, MAX_EDGE / Math.max(image.naturalWidth, image.naturalHeight))
+  let scale = Math.min(1, profile.maxEdge / Math.max(image.naturalWidth, image.naturalHeight))
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const width = Math.max(1, Math.round(image.naturalWidth * scale))
@@ -105,9 +146,10 @@ export async function preparePhoto(file: File): Promise<Omit<StoredPhoto, 'id' |
     context.fillRect(0, 0, width, height)
     context.drawImage(image, 0, 0, width, height)
 
+    const type = encodedType(canvas)
     for (const quality of QUALITY_STEPS) {
-      const src = canvas.toDataURL('image/jpeg', quality)
-      if (src.length <= BUDGET) return { src, width, height, bytes: src.length }
+      const src = canvas.toDataURL(type, quality)
+      if (src.length <= profile.budget) return { src, width, height, bytes: src.length }
     }
 
     scale *= 0.75

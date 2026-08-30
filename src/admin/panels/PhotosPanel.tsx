@@ -17,7 +17,15 @@
 
 import { useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode } from 'react'
 import { emptyPhoto, type GalleryPhoto, type SpotPhotos } from '../../data/wedding'
-import { formatBytes, preparePhoto, savePhoto, PhotoTooLargeError } from '../../lib/photos'
+import {
+  formatBytes,
+  preparePhoto,
+  savePhoto,
+  PhotoTooLargeError,
+  COVER_PROFILE,
+  GALLERY_PROFILE,
+  type PhotoProfile,
+} from '../../lib/photos'
 import { DEFAULT_CROP, type Crop } from '../../lib/crop'
 import { defaultContent, SPOT_KEYS } from '../../lib/siteConfig'
 import { useDraft } from '../DraftProvider'
@@ -246,7 +254,12 @@ export function PhotosPanel() {
   const coverInput = useRef<HTMLInputElement | null>(null)
   const galleryInput = useRef<HTMLInputElement | null>(null)
 
-  const upload = async (files: FileList | null, onDone: (photo: GalleryPhoto) => void, what: string) => {
+  const upload = async (
+    files: FileList | null,
+    onDone: (photo: GalleryPhoto) => void,
+    what: string,
+    profile: PhotoProfile = GALLERY_PROFILE,
+  ) => {
     if (!files || files.length === 0) return
 
     setError('')
@@ -255,7 +268,7 @@ export function PhotosPanel() {
     for (const [index, file] of picked.entries()) {
       setBusy(picked.length > 1 ? `${what} ${index + 1}/${picked.length}장 올리는 중…` : `${what} 올리는 중…`)
       try {
-        const prepared = await preparePhoto(file)
+        const prepared = await preparePhoto(file, profile)
         const stored = await savePhoto(prepared)
         onDone({
           photoId: stored.id,
@@ -286,6 +299,9 @@ export function PhotosPanel() {
           cover: { photoId: photo.photoId, image: photo.src, alt: current.cover.alt || photo.alt },
         })),
       '커버 사진을',
+      // The cover fills the whole viewport, so it is the one photo a desktop
+      // screen can out-resolve. It gets the larger allowance.
+      COVER_PROFILE,
     ).finally(() => {
       // Clearing the input is what makes picking the same file twice work.
       if (coverInput.current) coverInput.current.value = ''
