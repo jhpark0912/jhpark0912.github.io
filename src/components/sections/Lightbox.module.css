@@ -1,6 +1,13 @@
 .overlay {
   position: fixed;
   inset: 0;
+  /*
+   * The viewer is a swipe surface, not a zoom surface: a pinch here scales the
+   * whole page behind the overlay and strands the photo half off-screen, with
+   * no way back but reloading. `pan-y` keeps the swipe and drops pinch- and
+   * double-tap zoom across the entire backdrop, not just the photo.
+   */
+  touch-action: pan-y;
   z-index: var(--z-overlay);
   display: flex;
   flex-direction: column;
@@ -28,8 +35,7 @@
 .container {
   display: flex;
   align-items: center;
-  /* pinch-zoom stays available so guests can inspect a photo closely. */
-  touch-action: pan-y pinch-zoom;
+  touch-action: pan-y;
 }
 
 .slide {

@@ -57,6 +57,31 @@ export function Lightbox({ photos, startIndex, onClose }: LightboxProps) {
     }
   }, [])
 
+  /*
+   * `touch-action: pan-y` on the overlay stops pinch zoom in Chrome and
+   * Firefox, but iOS Safari runs its own gesture pipeline that the property
+   * never reaches. Blocking the gesture events — and any touchmove that has
+   * grown a second finger — closes that gap.
+   */
+  useEffect(() => {
+    const overlay = dialogRef.current
+    if (!overlay) return
+
+    const blockGesture = (event: Event) => event.preventDefault()
+    const blockMultiTouch = (event: TouchEvent) => {
+      if (event.touches.length > 1) event.preventDefault()
+    }
+
+    overlay.addEventListener('gesturestart', blockGesture, { passive: false })
+    overlay.addEventListener('gesturechange', blockGesture, { passive: false })
+    overlay.addEventListener('touchmove', blockMultiTouch, { passive: false })
+    return () => {
+      overlay.removeEventListener('gesturestart', blockGesture)
+      overlay.removeEventListener('gesturechange', blockGesture)
+      overlay.removeEventListener('touchmove', blockMultiTouch)
+    }
+  }, [])
+
   return createPortal(
     <div
       ref={dialogRef}
