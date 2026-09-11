@@ -41,7 +41,12 @@ export interface SiteConfig {
 export type ConfigSlot = 'draft' | 'published'
 
 /** Named once so adding a slot cannot be half-done. */
-export const SPOT_KEYS = ['hosts', 'calendar', 'farewell'] as const satisfies readonly (keyof SpotPhotos)[]
+export const SPOT_KEYS = [
+  'hosts',
+  'calendar',
+  'location',
+  'farewell',
+] as const satisfies readonly (keyof SpotPhotos)[]
 
 /* --------------------------------------------------------------- defaults -- */
 
@@ -194,6 +199,7 @@ function mergeSpotPhotos(value: unknown): SpotPhotos {
   return {
     hosts: mergeSpotPhoto(raw.hosts),
     calendar: mergeSpotPhoto(raw.calendar),
+    location: mergeSpotPhoto(raw.location),
     farewell: mergeSpotPhoto(raw.farewell),
   }
 }

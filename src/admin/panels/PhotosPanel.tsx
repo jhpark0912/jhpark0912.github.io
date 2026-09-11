@@ -39,7 +39,7 @@ import styles from '../Admin.module.css'
  * The `ratio` repeats the crop each slot is rendered at on the invitation so
  * the preview and the crop editor can show the same crop. It is duplicated
  * rather than imported because the invitation states it at the call site — the
- * couple band as a prop, the other two by taking `SpotPhoto`'s default.
+ * couple band as a prop, the rest by taking `SpotPhoto`'s default.
  */
 const SPOT_LABELS: Record<keyof SpotPhotos, { title: string; note: string; ratio: number }> = {
   hosts: {
@@ -48,6 +48,7 @@ const SPOT_LABELS: Record<keyof SpotPhotos, { title: string; note: string; ratio
     ratio: 16 / 9,
   },
   calendar: { title: '일정 사진', note: '예식 일정의 날짜 아래, 달력 위에 놓입니다.', ratio: 4 / 5 },
+  location: { title: '오시는 길 사진', note: '오시는 길 제목 아래, 예식장 이름 위에 놓입니다.', ratio: 4 / 5 },
   farewell: { title: '인사 사진', note: '맨 아래 마지막 인사 바로 위에 놓입니다.', ratio: 4 / 5 },
 }
 

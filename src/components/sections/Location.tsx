@@ -6,6 +6,7 @@ import { copyText } from '../../lib/clipboard'
 import { Section } from '../ui/Section'
 import { Reveal } from '../ui/Reveal'
 import { Accordion } from '../ui/Accordion'
+import { SpotPhoto } from '../ui/SpotPhoto'
 import { Button, LinkButton } from '../ui/Button'
 import { useToast } from '../ui/ToastProvider'
 import styles from './Location.module.css'
@@ -30,7 +31,7 @@ function NavIcon({ src }: { src: string }) {
 }
 
 export function Location() {
-  const { venue } = useContent()
+  const { venue, photos } = useContent()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [state, setState] = useState<MapState>(hasKakaoKey ? 'idle' : 'error')
   const [coords, setCoords] = useState<Coordinates | null>(() => staticCoords(venue))
@@ -107,7 +108,9 @@ export function Location() {
 
   return (
     <Section id="location" eyebrow="Location" title="오시는 길" tinted>
-      <Reveal className={styles.venue}>
+      <SpotPhoto photo={photos.location} className={styles.photo} />
+
+      <Reveal delay={60} className={styles.venue}>
         <p className={styles.name}>{venue.name}</p>
         <p className={styles.hall}>{venue.hall}</p>
         <p className={styles.address}>{fullAddress}</p>

@@ -103,6 +103,8 @@ export interface SpotPhotos {
   hosts: GalleryPhoto
   /** Between the wedding date and the calendar. */
   calendar: GalleryPhoto
+  /** Opens 오시는 길, above the venue's name. */
+  location: GalleryPhoto
   /** The closing picture, just above the last greeting. */
   farewell: GalleryPhoto
 }
@@ -267,6 +269,7 @@ export const wedding: WeddingContent = {
   photos: {
     hosts: emptyPhoto(),
     calendar: emptyPhoto(),
+    location: emptyPhoto(),
     farewell: emptyPhoto(),
   },
 

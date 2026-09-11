@@ -30,6 +30,13 @@
   text-underline-offset: 3px;
 }
 
+/* Opens the section, above the venue's name. Held short of the full column so
+   it reads as a picture of the place rather than as a banner. */
+.photo {
+  max-width: 300px;
+  margin: 0 auto var(--space-5);
+}
+
 .mapCard {
   display: block;
 }
