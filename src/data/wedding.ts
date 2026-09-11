@@ -188,7 +188,7 @@ export const wedding: WeddingContent = {
     url: 'https://jhpark0912.github.io/',
     title: '재현 ♥ 현정 결혼합니다',
     description: '2026년 12월 12일 토요일 오후 4시 40분, DMC타워 웨딩 2층 그랜드볼룸',
-    shareImage: 'https://jhpark0912.github.io/images/share.jpg',
+    shareImage: 'https://jhpark0912.github.io/images/thumbnail.jpg',
   },
 
   date: '2026-12-12T16:40:00+09:00',
