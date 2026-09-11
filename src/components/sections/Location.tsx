@@ -108,7 +108,7 @@ export function Location() {
 
   return (
     <Section id="location" eyebrow="Location" title="오시는 길" tinted>
-      <SpotPhoto photo={photos.location} className={styles.photo} />
+      <SpotPhoto photo={photos.location} variant="band" className={styles.photo} />
 
       <Reveal delay={60} className={styles.venue}>
         <p className={styles.name}>{venue.name}</p>

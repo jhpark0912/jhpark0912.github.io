@@ -50,14 +50,7 @@
  * names.
  */
 .couplePhoto {
-  width: calc(100% + var(--page-padding) * 2);
-  margin-left: calc(var(--page-padding) * -1);
-  margin-right: calc(var(--page-padding) * -1);
   margin-bottom: calc(var(--space-5) * -1);
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
-  box-shadow: none;
 }
 
 /*

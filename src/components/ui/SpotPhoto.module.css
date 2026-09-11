@@ -7,6 +7,27 @@
 }
 
 /*
+ * Runs the full width of the phone, past the section's own padding, and is
+ * cropped low.
+ *
+ * Wide and low rather than large: it has to be recognisably the people or the
+ * place the words are about without becoming what the section is about.
+ * Spanning edge to edge is what makes a band that low look deliberate instead
+ * of undersized. Shared rather than restated per section so the two bands stay
+ * the same band.
+ */
+.band {
+  --spot-ratio: 16 / 9;
+  width: calc(100% + var(--page-padding) * 2);
+  margin-left: calc(var(--page-padding) * -1);
+  margin-right: calc(var(--page-padding) * -1);
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  box-shadow: none;
+}
+
+/*
  * A tall crop, because these are portraits of two people standing together and
  * a phone has height to spare where it has no width. The photo's own ratio is
  * still written on the element, so the space is reserved correctly before the

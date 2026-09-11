@@ -9,6 +9,8 @@ interface SpotPhotoProps {
   delay?: number
   /** Crop, as a CSS aspect-ratio. Left off for the standing-portrait default. */
   ratio?: string
+  /** `band` spans the full width of the phone and crops to 16:9. */
+  variant?: 'card' | 'band'
   className?: string
 }
 
@@ -20,13 +22,13 @@ interface SpotPhotoProps {
  * is written onto the <img> so the space is reserved before the bytes land and
  * the text below it never jumps.
  */
-export function SpotPhoto({ photo, delay = 0, ratio, className }: SpotPhotoProps) {
+export function SpotPhoto({ photo, delay = 0, ratio, variant = 'card', className }: SpotPhotoProps) {
   if (!photo.src) return null
 
   return (
     <Reveal
       delay={delay}
-      className={[styles.frame, className].filter(Boolean).join(' ')}
+      className={[styles.frame, variant === 'band' ? styles.band : '', className].filter(Boolean).join(' ')}
       style={
         {
           '--spot-ratio': ratio,
